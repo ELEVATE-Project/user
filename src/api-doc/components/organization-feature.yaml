@@ -1,0 +1,631 @@
+createOrganizationFeatureRequest:
+  type: object
+  description: >-
+    Request payload for creating an organization feature. `feature_code`,
+    `feature_name` and `display_order` are mandatory. When the caller is not an
+    admin and belongs to a non-default organization, the supplied
+    `display_order` is overridden by the value inherited from the default
+    organization's copy of the feature. Server-managed fields
+    (`organization_code`, `tenant_code`, `created_by`, `updated_by`, timestamps,
+    `deleted_at`) are stripped from the request body and cannot be set by the
+    client.
+  required:
+    - feature_code
+    - feature_name
+    - display_order
+  properties:
+    feature_code:
+      type: string
+      description: Unique code identifying the feature.
+      example: feat3t7os9otwv
+    feature_name:
+      type: string
+      description: Human readable name of the feature.
+      example: Replay Feature
+    display_order:
+      type: integer
+      description: Ordering position of the feature. Must contain only digits.
+      example: 1
+    roles:
+      type: array
+      description: >-
+        Optional list of role titles to map to this feature. Every title must
+        already exist for the tenant, otherwise the request fails with
+        ROLE_NOT_FOUND.
+      items:
+        type: string
+      example:
+        - mentee
+        - mentor
+    enabled:
+      type: boolean
+      description: Whether the feature is enabled for the organization.
+      example: false
+    icon:
+      type: string
+      nullable: true
+      description: Icon path/reference for the feature.
+      example: null
+    redirect_url:
+      type: string
+      nullable: true
+      description: Redirect URL associated with the feature.
+      example: null
+    translations:
+      type: object
+      nullable: true
+      description: Localized translations for the feature.
+      example: null
+    meta:
+      type: object
+      nullable: true
+      description: Additional metadata for the feature.
+      example: null
+createOrganizationFeature201Response:
+  type: object
+  description: Organization feature created successfully.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Organization feature created successfully
+    result:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          example: false
+        feature_code:
+          type: string
+          example: feat3t7os9otwv
+        feature_name:
+          type: string
+          example: Replay Feature
+        display_order:
+          type: integer
+          example: 1
+        organization_code:
+          type: string
+          example: default_code
+        tenant_code:
+          type: string
+          example: default
+        created_by:
+          type: integer
+          example: 23
+        updated_at:
+          type: string
+          example: '2026-07-15T10:56:26.052Z'
+        created_at:
+          type: string
+          example: '2026-07-15T10:56:26.052Z'
+        icon:
+          type: string
+          nullable: true
+          example: null
+        redirect_url:
+          type: string
+          nullable: true
+          example: null
+        translations:
+          type: object
+          nullable: true
+          example: null
+        meta:
+          type: object
+          nullable: true
+          example: null
+        updated_by:
+          type: integer
+          nullable: true
+          example: null
+        deleted_at:
+          type: string
+          nullable: true
+          example: null
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              type:
+                type: string
+                example: formsrggjf
+              version:
+                type: integer
+                example: 0
+        correlation:
+          type: string
+          example: 5ac13e0f-8926-4ee9-ae00-3a3c2fd4373d
+createOrganizationFeature422Response:
+  type: object
+  description: >-
+    Validation failed. Returned when a required body field (e.g. feature_code)
+    is missing or malformed.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+            example: body
+          param:
+            type: string
+            example: feature_code
+          msg:
+            type: string
+            example: feature_code field is empty
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 31ee8f57-56fc-43ab-bf2a-401b62dd7cc4
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+readOrganizationFeature200Response:
+  type: object
+  description: List of organization features fetched successfully.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Organization Feature fetched successfully.
+    result:
+      type: array
+      items:
+        type: object
+        properties:
+          organization_code:
+            type: string
+            example: default_code
+          feature_code:
+            type: string
+            example: programs
+          tenant_code:
+            type: string
+            example: default
+          enabled:
+            type: boolean
+            example: true
+          feature_name:
+            type: string
+            example: Programs
+          icon:
+            type: string
+            nullable: true
+            example: null
+          redirect_url:
+            type: string
+            nullable: true
+            example: null
+          translations:
+            type: object
+            nullable: true
+            example: null
+          meta:
+            type: object
+            nullable: true
+            example: null
+          display_order:
+            type: integer
+            example: 1
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              type:
+                type: string
+                example: formsrggjf
+              version:
+                type: integer
+                example: 0
+        correlation:
+          type: string
+          example: fd559cca-af5c-4c59-98df-e321eebafa7b
+
+# --------------------------------------------------------------------------
+# update (PATCH /user/v1/organization-feature/update/{id})
+# --------------------------------------------------------------------------
+updateOrganizationFeatureRequest:
+  type: object
+  description: >-
+    Request payload for updating an existing organization feature. Only
+    `feature_name` is mandatory on this branch; `display_order`, if present,
+    must contain only digits. Server-managed fields plus `feature_code`
+    (organization_code, tenant_code, created_by, updated_by, created_at,
+    updated_at, deleted_at) cannot be changed via update, even if supplied.
+  x-internal-note: >-
+    Applies only when req.method != DELETE
+    (validators/v1/organization-feature.js#update). Stripped via
+    filterRequestBody with the `organizationFeatures.update` blacklist
+    (constants/blacklistConfig.js).
+  required:
+    - feature_name
+  properties:
+    feature_name:
+      type: string
+      description: Human readable name of the feature.
+      example: Mitra
+    display_order:
+      type: integer
+      description: >-
+        Ordering position of the feature. Optional on update; must contain
+        only digits when supplied.
+      example: 1
+    roles:
+      type: array
+      description: >-
+        Optional list of role titles to map to this feature. When supplied,
+        ALL existing feature_role_mapping rows for this feature/org/tenant
+        are deleted and replaced with the new set. Every title must already
+        exist for the tenant, otherwise the request fails with
+        ROLE_NOT_FOUND.
+      items:
+        type: string
+      example:
+        - mentee
+        - mentor
+    enabled:
+      type: boolean
+      description: Whether the feature is enabled for the organization.
+      example: true
+    icon:
+      type: string
+      description: Icon path/reference for the feature.
+      example: /assets/images/ic_mitra.svg
+    redirect_url:
+      type: string
+      nullable: true
+      description: Redirect URL associated with the feature.
+      example: null
+    translations:
+      type: object
+      nullable: true
+      description: Localized translations for the feature.
+      example: null
+    meta:
+      type: object
+      description: Additional metadata for the feature.
+      example:
+        url: https://dev.elevate-mitra.shikshalokam.org/mohini/sso?accToken=
+        icon: /assets/images/ic_mitra.svg
+        theme:
+          primaryColor: '#572E91'
+          secondaryColor: '#FF9911'
+        title: MITRA
+        sameOrigin: true
+
+# Never captured live (captured-responses.json has no entry for the update
+# endpoint) — see gaps.jsonl. The generic envelope below
+# (responseCode/message/result/meta) IS consistently observed across every
+# other captured success response in this domain; the specific shape of
+# `result` (services/organization-feature.js#update returns
+# updatedOrgFeature?.[0], the first row of the Sequelize
+# update-with-returning result) is a best-effort structural guess only and
+# must not be treated as confirmed.
+updateOrganizationFeature200Response:
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: ORG_FEATURE_UPDATED_SUCCESSFULLY
+    result:
+      type: object
+      description: The updated organization feature record.
+      x-internal-note: 'Shape unconfirmed; never captured live.'
+    meta:
+      type: object
+
+# Never captured live — see gaps.jsonl. Body shape inferred only from the
+# shared failureResponse envelope (responseCode/error/meta/message)
+# consistently observed elsewhere in this domain.
+updateOrganizationFeature422Response:
+  type: object
+  description: >-
+    Validation failed on the update branch (e.g. missing/empty
+    `feature_name`, non-digit `display_order`, or a missing `id` path
+    parameter).
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+          param:
+            type: string
+          msg:
+            type: string
+    meta:
+      type: object
+    message:
+      type: string
+
+# --------------------------------------------------------------------------
+# delete (DELETE /user/v1/organization-feature/update/{id})
+# --------------------------------------------------------------------------
+# Never captured live — see gaps.jsonl. Envelope shape inferred from the
+# shared successResponse contract; services/organization-feature.js#delete
+# literally returns result: {} (a hardcoded empty object), which is why
+# `result` is typed as an empty object below, but this has not been
+# confirmed against a live response.
+deleteOrganizationFeature200Response:
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: ORG_FEATURE_DELETED_SUCCESSFULLY
+    result:
+      type: object
+      description: Empty result object.
+      x-internal-note: 'Shape unconfirmed from a live capture; code hardcodes an empty object.'
+      example: {}
+    meta:
+      type: object
+
+# --------------------------------------------------------------------------
+# read by id (GET /user/v1/organization-feature/read/{id})
+# --------------------------------------------------------------------------
+# Never captured live — only the no-id (list) branch of GET .../read was
+# captured. services/organization-feature.js#read does NOT apply the
+# `attributes: exclude` queryOptions that #list uses, so the single-record
+# shape may include additional columns (id, created_by, updated_by,
+# created_at, updated_at, deleted_at) not present in the list response —
+# this is a structural inference, not a confirmed shape.
+readOrganizationFeatureById200Response:
+  type: object
+  description: Single organization feature fetched successfully by feature code (path param `id`).
+  x-internal-note: 'Shape unconfirmed; see gaps.jsonl.'
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: ORG_FEATURE_FETCHED
+    result:
+      type: object
+      description: The organization feature record.
+      x-internal-note: >-
+        Shape unconfirmed from a live capture. Expected to resemble one item
+        of readOrganizationFeature200Response's result array, possibly with
+        additional unexcluded columns — see note above.
+    meta:
+      type: object
+
+# --------------------------------------------------------------------------
+# Shared failure responses (validateAndUpdateToken, create, update, read,
+# delete). None of these have a matching captured-responses.json entry —
+# see gaps.jsonl. Bodies below use only the generic failureResponse
+# envelope (responseCode/error/meta/message) consistently observed
+# elsewhere in this domain; no field values are fabricated beyond that
+# envelope and the literal i18n message key from the source line cited.
+# --------------------------------------------------------------------------
+
+# services/organization-feature.js#validateAndUpdateToken (lines 31-37):
+# thrown when the caller's roles do not include admin or org_admin. Applies
+# to both create and update (and, via the update controller path, delete).
+organizationFeatureUserNotAdmin400Response:
+  type: object
+  description: Caller does not have the required admin or org_admin role (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    meta:
+      type: object
+    message:
+      type: string
+      example: USER_IS_NOT_ADMIN
+
+# services/organization-feature.js#validateAndUpdateToken (lines 48-54) and
+# controllers/v1/organization-feature.js#read (lines 76-82): thrown when
+# organization_code or tenant_code cannot be resolved from the token/headers.
+# Applies to create, update, delete, list and single read.
+organizationFeatureOrgOrTenantCodeNotFound400Response:
+  type: object
+  description: The organization or tenant code could not be resolved for the caller (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    meta:
+      type: object
+    message:
+      type: string
+      example: ORGANIZATION_CODE_OR_TENANT_CODE_NOT_FOUND
+
+# services/organization-feature.js#create (lines 80-87, default-organization
+# feature lookup fails for a non-admin caller in a non-default org) AND
+# lines 141-146 (Sequelize foreign-key constraint error on the
+# feature_code FK, i.e. feature_code does not exist in the features table).
+# Same message/statusCode from two distinct causes.
+organizationFeatureNotFound400Response:
+  type: object
+  description: >-
+    The referenced feature could not be found (statusCode 400). Returned by
+    create when either (a) a non-admin caller in a non-default organization
+    references a feature_code that has no enabled counterpart in the default
+    organization, or (b) feature_code does not correspond to any known
+    feature. Also returned by update when the same feature_code condition
+    applies.
+  x-internal-note: >-
+    (b) is a foreign-key constraint violation. No live captured example; see
+    gaps.jsonl. Update case: services/organization-feature.js#update, line
+    242-248.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    meta:
+      type: object
+    message:
+      type: string
+      example: FEATURE_NOT_FOUND
+
+# services/organization-feature.js#create (lines 112-120) and #update
+# (lines 203-210): thrown when one or more `roles` titles supplied in the
+# request body do not exist for the tenant.
+organizationFeatureRoleNotFound400Response:
+  type: object
+  description: One or more of the supplied role titles do not exist for the tenant (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    meta:
+      type: object
+    message:
+      type: string
+      example: ROLE_NOT_FOUND
+
+# services/organization-feature.js#create (lines 147-152): Sequelize
+# UniqueConstraintError when an organization feature with the same
+# feature_code/organization_code/tenant_code already exists.
+organizationFeatureAlreadyExists400Response:
+  type: object
+  description: An organization feature with the same feature_code, organization_code and
+    tenant_code already exists (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    meta:
+      type: object
+    message:
+      type: string
+      example: ORGANIZATION_FEATURE_EXISTS
+
+# services/organization-feature.js#create (lines 153-158): generic
+# catch-all fallback — any error not matching the foreign-key-constraint or
+# UniqueConstraintError branches is returned as a 400 with the raw
+# error.message (not a fixed i18n key). Message text is not a stable
+# contract and cannot be enumerated; documented shape-only.
+organizationFeatureGenericError400Response:
+  type: object
+  description: An unexpected error occurred while creating the organization feature (statusCode 400).
+  x-internal-note: >-
+    No live captured example; see gaps.jsonl. `message` is whatever
+    `error.message` happens to be for the underlying failure and is NOT a
+    fixed/stable i18n key.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    meta:
+      type: object
+    message:
+      type: string
+
+# services/organization-feature.js#update (lines 188-195): returned when the
+# update query affects zero rows (feature_code not found for this
+# organization/tenant).
+organizationFeatureUpdateFailed400Response:
+  type: object
+  description: The update matched zero rows - no feature was found for this organization/tenant with
+    the given feature_code (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    meta:
+      type: object
+    message:
+      type: string
+      example: FAILED_TO_UPDATE_ORG_FEATURE
+
+# services/organization-feature.js#read (lines 409-416): the feature was not
+# found for the given code in either the caller's organization or the
+# default organization. Statuscode is 400 here (bad_request) — note this
+# differs from #delete's ORG_FEATURE_NOT_FOUND, which uses 404 (not_found)
+# for the same message text; see the routing-branch note on the read/delete
+# endpoints.
+organizationFeatureReadNotFound400Response:
+  type: object
+  description: The feature was not found for the given code in either the caller's organization or
+    the tenant's default organization (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    meta:
+      type: object
+    message:
+      type: string
+      example: ORG_FEATURE_NOT_FOUND
+
+# services/organization-feature.js#delete (lines 446-453): no rows were
+# deleted (feature_code not found for this organization/tenant). Statuscode
+# is 404 (not_found) here, unlike #read's use of the same message text at
+# 400 (bad_request).
+organizationFeatureDeleteNotFound404Response:
+  type: object
+  description: No organization feature matched the given feature_code for this organization/tenant
+    (statusCode 404).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    meta:
+      type: object
+    message:
+      type: string
+      example: ORG_FEATURE_NOT_FOUND

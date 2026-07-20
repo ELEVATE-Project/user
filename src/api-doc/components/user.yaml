@@ -1,0 +1,1853 @@
+registrationOtp400Response:
+  description: Email field is required
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+            example: body
+          param:
+            type: string
+            example: email
+          msg:
+            type: string
+            example: email field is empty
+registrationOtpResponse200:
+  description: Registration OTP response
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: OTP has been sent to your registered email ID. Please enter the otp to complete the registration
+        process.
+    result:
+      type: array
+      items:
+        type: string
+      example: []
+registrationOtpRequest:
+  type: object
+  description: Request body for registration OTP
+  properties:
+    name:
+      type: string
+      example: Anu
+    email:
+      type: string
+      example: anu@gmail.com
+    password:
+      type: string
+      example: password
+userCreateUserRequest:
+  type: object
+  description: >
+    Request body for creating a user account.
+
+
+    Cross-field / runtime rules enforced by the service (not by per-field validators):
+
+    - **At least one of `email` or `phone` must be provided** (modeled below as `anyOf`);
+      otherwise `EMAIL_OR_PHONE_REQUIRED` (400).
+
+    - **`password` is conditionally gated on the tenant's runtime `configuration.allowed_auth_mode`**:
+      if PASSWORD auth mode is allowed a password is required (else `PASSWORD_REQUIRED`, 400); if a
+      password is supplied but PASSWORD mode is not allowed, `AUTH_MODE_NOT_ALLOWED` (400) is returned.
+      Because this depends on runtime tenant config it is NOT expressed in the schema.
+
+    - **Invitation vs identity matching precedence**: when both `invitation_key` and `invitation_code`
+      are absent, the invitee is matched by `email` / `username` / `phone`; supplying invitation
+      credentials takes precedence over identity-based matching. This is inferred from filter
+      construction (no explicit error is thrown) and is therefore described here rather than modeled
+      as a hard `oneOf`.
+
+    - `role` is required only when the role-handling branch executes (conditional), so it is optional here.
+  anyOf:
+    - required: [email]
+    - required: [phone]
+  properties:
+    name:
+      type: string
+      description: Name of the user
+      example: John Deo
+    email:
+      type: string
+      description: Email Id of user. At least one of email or phone is required.
+      example: example@mail.com
+    username:
+      type: string
+      description: Username of the user.
+      example: john_deo
+    phone:
+      type: string
+      description: Phone number of user. At least one of email or phone is required.
+      example: '9876543210'
+    phone_code:
+      type: string
+      description: Country dialing code for phone.
+      example: '+91'
+    password:
+      type: string
+      description: Password of user. Required/forbidden depending on tenant allowed_auth_mode (see description).
+      format: password
+      example: Password@123
+    otp:
+      type: string
+      description: OTP for verification.
+      example: '6845975'
+    invitation_key:
+      type: string
+      description: Invitation key. Takes precedence over identity-based matching when present.
+      example: inv_key_abc123
+    invitation_code:
+      type: string
+      description: Invitation code. Takes precedence over identity-based matching when present.
+      example: INVITE2024
+    role:
+      type: string
+      description: Role of the user. Required only when the role branch executes.
+      example: mentee
+    has_accepted_terms_and_conditions:
+      type: boolean
+      description: Flag specifiying if user has accepted the terms & conditions
+      example: true
+userCreateUserResponse:
+  description: User creation response
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Sign-up successful Please wait while logging in.
+    result:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          type: object
+          properties:
+            id:
+              type: number
+              example: 8
+            email:
+              type: string
+              example: example@mail.com
+            email_verified:
+              type: string
+              example: 'true'
+            name:
+              type: string
+              example: John Deo
+            status:
+              type: string
+              example: ACTIVE
+            has_accepted_terms_and_conditions:
+              type: boolean
+              example: true
+            preferred_language:
+              type: string
+              example: en
+            organization_id:
+              type: number
+              example: 1
+            roles:
+              type: array
+              items:
+                type: number
+              example:
+                - 3
+            created_at:
+              type: string
+              example: '2023-09-20T11:59:37.871Z'
+            updated_at:
+              type: string
+              example: '2023-09-20T11:59:37.871Z'
+            user_roles:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 3
+                  title:
+                    type: string
+                    example: mentee
+                  user_type:
+                    type: number
+                    example: 0
+                  status:
+                    type: string
+                    example: ACTIVE
+userCreateUser406Exist:
+  description: User solutions response
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: User already exists.
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+userCreateUser400Response:
+  description: Reffral Code is Invalid
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: The OTP you entered is wrong.
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+userLoginRequest:
+  type: object
+  description: >
+    Request body for user login.
+
+
+    Cross-field / runtime rules enforced by the service (not by per-field validators):
+
+    - **At least one of `password` or `otp` must be provided** (modeled below as `anyOf`); otherwise
+      `Password or OTP is required.` (400).
+
+    - Which of password / OTP login is actually accepted depends on the tenant's runtime
+      `configuration.allowed_auth_mode` (e.g. a tenant may permit only OTP), so it is not modeled here.
+
+    - During OTP-based auto-registration on first login, if the tenant allows PASSWORD auth mode and
+      no password is supplied, `PASSWORD_REQUIRED` is returned. This is runtime-config gated and not
+      expressed in the schema.
+  required:
+    - identifier
+    - phone_code
+  anyOf:
+    - required: [password]
+    - required: [otp]
+  properties:
+    identifier:
+      type: string
+      description: Email, username or phone number of the user.
+      example: example@mail.com
+    phone_code:
+      type: string
+      description: Country dialing code, sent alongside the identifier.
+      example: '+91'
+    password:
+      type: string
+      description: User password. Provide either password or otp.
+      example: Password@123
+    otp:
+      type: string
+      description: One-time password. Provide either password or otp.
+      example: '123456'
+userLoginResponse:
+  type: object
+  description: User login response
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: User logged in successfully.
+    result:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo3LCJlbWFpbCI6ImhpbGJlcnQyOUB5YWhvby5jb20iLCJuYW1lIjoiQWRlbGlhIiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg2Nzg2LCJleHAiOjE2OTAzNzMxODZ9.0_Yi8yEu_G04VNJvVvafWMvO-Eb9TVsoCnp_pfrFVi8
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo3LCJlbWFpbCI6ImhpbGJlcnQyOUB5YWhvby5jb20iLCJuYW1lIjoiQWRlbGlhIiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg2Nzg2LCJleHAiOjE3MDYwOTc5ODZ9.quHyyjz4DEc7rvKpxwzaiRyRKFkqrbTb8tNB5zX0eF0
+        user:
+          type: object
+          properties:
+            id:
+              type: number
+              example: 7
+            email:
+              type: string
+              example: hilbert29@yahoo.com
+            email_verified:
+              type: string
+              example: true
+            name:
+              type: string
+              example: Adelia
+            gender:
+              type: object
+              properties:
+                value:
+                  type: string
+                  example: male
+                label:
+                  type: string
+                  example: Male
+            languages:
+              type: array
+              items:
+                type: object
+                properties:
+                  value:
+                    type: string
+                    example: en_in
+                  label:
+                    type: string
+                    example: English
+            about:
+              type: string
+              example: null
+            share_link:
+              type: string
+              example: null
+            status:
+              type: string
+              example: ACTIVE
+            last_logged_in_at:
+              type: string
+              format: date-time
+              example: '2023-07-25T11:50:35.044Z'
+            has_accepted_terms_and_conditions:
+              type: boolean
+              example: true
+            location:
+              type: array
+              items:
+                type: object
+                properties:
+                  value:
+                    type: string
+                    example: ap
+                  label:
+                    type: string
+                    example: Andhra Pradesh
+            preferred_language:
+              type: object
+              properties:
+                value:
+                  type: string
+                  example: english
+                label:
+                  type: string
+                  example: English
+            organization:
+              type: object
+              properties:
+                id:
+                  type: number
+                  example: 2
+                name:
+                  type: string
+                  example: Tunerlabs
+                code:
+                  type: string
+                  example: tl
+            organization_id:
+              type: number
+              example: 2
+            roles:
+              type: array
+              items:
+                type: number
+              example:
+                - 2
+            image:
+              type: string
+              example: https://cloudstorage.com/container/abc.png
+            deleted_at:
+              type: string
+              example: null
+            created_at:
+              type: string
+              example: '2023-07-24T14:37:56.393Z'
+            updated_at:
+              type: string
+              example: '2023-07-25T11:50:35.044Z'
+            user_roles:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 1
+                  title:
+                    type: string
+                    example: mentee
+                  user_type:
+                    type: integer
+                    example: 0
+                  status:
+                    type: string
+                    example: ACTIVE
+userLoginResponse400:
+  description: Username or password is invalid.
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: Please enter the correct login ID and Password.
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+acceptTermsAndConditionResponse:
+  description: OK, User Accepted Terms.
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: User successfully updated.
+    result:
+      type: array
+      items:
+        type: string
+      example: []
+acceptTermsAndConditionResponse400:
+  description: OK, User Does not exist
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: User doesn't exist.
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+generateTokenRequest:
+  type: object
+  description: Request body for generating access token
+  required:
+    - refresh_token
+  properties:
+    refresh_token:
+      type: string
+      description: Refresh token.
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6dHJ1ZX0sImlhdCI6MTY1MzAxMDYxNCwiZXhwIjoxNjY4ODIxODE0fQ.hrIiKz3envHDPauVXSmA_BO_KKzWJAePsP3xD8l851s
+generateTokenResponse200:
+  description: OK. Access token has been generated successfully.
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Access token generated successfully
+    result:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6dHJ1ZX0sImlhdCI6MTY1MzAxMDk4NCwiZXhwIjoxNjUzMDk3Mzg0fQ.BOZ_d6xNxuAJZ1ubdj94mCeO4jwXsC7t9JT4KXECVN
+generateTokenResponse400:
+  description: Bad Request
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: User doesn't exist.
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+generateTokenResponse401:
+  description: Unauthorized
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: SERVER_ERROR
+    message:
+      type: string
+      example: Refresh token expired
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+generateTokenResponse500:
+  description: Internal Server Error
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: Refresh token not found
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+genrateOtpRequest:
+  type: object
+  description: Request body for generating OTP
+  required:
+    - email
+    - password
+  properties:
+    email:
+      type: string
+      description: Email address of the user
+      example: example@mail.com
+    password:
+      type: string
+      description: User password
+      example: Password
+generateOtpResponse200:
+  description: OK, otp genrated successfully
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: OTP has been sent to your registered email ID. Please enter the number to update your password.
+    result:
+      type: array
+      items:
+        type: string
+      example: []
+generateOtpResponse400:
+  description: Internal Server Error
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: SERVER_ERROR
+    message:
+      type: string
+      example: Unable to send otp, may be redis server is down.
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+generateOtpResponse500:
+  description: OTP Response
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: User doesn't exist.
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+resetPasswordRequest:
+  type: object
+  description: Request body for resetting the user password
+  required:
+    - email
+    - password
+    - otp
+  properties:
+    email:
+      type: string
+      description: Email address of the user
+      example: example@mail.com
+    password:
+      type: string
+      description: New password of the user
+      example: New password
+    otp:
+      type: number
+      description: OTP sent to the user's email
+      example: 123456
+resetPasswordResponse200:
+  type: object
+  description: Reset Password response
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Password reset successfully.
+    result:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo5LCJlbWFpbCI6ImJyYW5keW4udGVycnlAeWFob28uY29tIiwibmFtZSI6IkFzaGx5Iiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg1NzE4LCJleHAiOjE2OTAzNzIxMTh9.WmhUXIocykrBVti7vtznx_BMAaBtuqYUks4sc1J94Do
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo5LCJlbWFpbCI6ImJyYW5keW4udGVycnlAeWFob28uY29tIiwibmFtZSI6IkFzaGx5Iiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg1NzE4LCJleHAiOjE3MDYwOTY5MTh9.eqJ-KD0YA-Cdpz3XHWKgmi66uU6o229K9pyp6BwAAzI
+        user:
+          type: object
+          properties:
+            id:
+              type: number
+              example: 9
+            email:
+              type: string
+              example: brandyn.terry@yahoo.com
+            email_verified:
+              type: string
+              example: true
+            name:
+              type: string
+              example: Ashly
+            gender:
+              type: object
+              properties:
+                value:
+                  type: string
+                  example: male
+                label:
+                  type: string
+                  example: Male
+            about:
+              type: string
+              example: null
+            share_link:
+              type: string
+              example: null
+            status:
+              type: string
+              example: ACTIVE
+            image:
+              type: string
+              example: null
+            last_logged_in_at:
+              type: string
+              format: nullable
+            has_accepted_terms_and_conditions:
+              type: boolean
+              example: true
+            languages:
+              type: array
+              items:
+                type: string
+              example: []
+            preferred_language:
+              type: string
+              example: en
+            organization_id:
+              type: number
+              example: 1
+            roles:
+              type: array
+              items:
+                type: number
+                example: 2
+            deleted_at:
+              type: string
+              example: null
+            created_at:
+              type: string
+              example: '2023-07-25T11:48:38.270Z'
+            updated_at:
+              type: string
+              example: '2023-07-25T11:48:38.270Z'
+            user_roles:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 2
+                  title:
+                    type: string
+                    example: mentor
+                  user_type:
+                    type: number
+                    example: 0
+                  status:
+                    type: string
+                    example: ACTIVE
+resetPasswordResponse400:
+  description: Bad Request
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: Please enter a new password, that has not been used before
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+resetPasswordResponse401:
+  description: UnAuthorized
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: Please enter the correct OTP.
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+logoutRequest:
+  type: object
+  description: Request body for user logout
+  required:
+    - refreshToken
+  properties:
+    refresh_token:
+      type: string
+      description: Refresh token.
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6dHJ1ZX0sImlhdCI6MTY1MzAxMDYxNCwiZXhwIjoxNjY4ODIxODE0fQ.hrIiKz3envHDPauVXSmA_BO_KKzWJAePsP3xD8l851s
+logoutResponse200:
+  description: OK, User logout successfully
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: User logged out successfully.
+    result:
+      type: array
+      items:
+        type: string
+      example: []
+logoutResponse400:
+  description: Bad Request
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: User doesn't exist.
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+logoutResponse401:
+  description: Unauthorized
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: UNAUTHORIZED
+    message:
+      type: string
+      example: Invalid refresh token
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+# =============================================================================
+# user domain (controllers/v1/user.js + services/user.js) — profile management
+# Operations: update, read, profileById, share, setLanguagePreference.
+#
+# NOTE: everything ABOVE this marker in this file (registrationOtp*, userCreateUser*,
+# userLogin*, acceptTermsAndCondition*, generateToken*, genrateOtp*/generateOtp*,
+# resetPassword*, logout*, userList200Response) documents controllers/v1/account.js +
+# services/account.js operations (create/login/logout/generateToken/generateOtp/
+# registrationOtp/resetPassword/list), NOT controllers/v1/user.js. They were found
+# already present under this filename and are out of scope for this domain pass
+# (account.js/services/account.js are a different domain). They are left as-is,
+# untouched, since src/api-doc/openapi.yaml still $refs them by these exact keys
+# and fixing that cross-domain mismatch is a job for the later reconciliation pass.
+# See gaps.jsonl for a recorded note about this file/domain mismatch.
+#
+# Everything BELOW this marker is genuinely controllers/v1/user.js + services/user.js
+# scoped and was added/verified in this pass. Names are prefixed userProfile*/
+# userSetLanguagePreference* to avoid any collision with the pre-existing keys above.
+# =============================================================================
+userProfileReadResponse200:
+  description: >
+    OK. Returns the authenticated user's own profile. The same response shape
+    is used whether the profile was served from cache or read fresh.
+  x-internal-note: >-
+    Captured example (services/user.js read()), 'happy path (self)' case.
+    Same shape is used whether the profile came from Redis cache or a fresh
+    DB read.
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Profile fetched successfully.
+    result:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 22
+        email:
+          type: string
+          example: mentee_3t7m88mkgp@tunerlabs.com
+        email_verified:
+          type: string
+          example: 'false'
+        name:
+          type: string
+          example: Nevil Mathew
+        username:
+          type: string
+          example: mentee_3t7m88mvl5
+        phone:
+          type: string
+          nullable: true
+          example: null
+        phone_code:
+          type: string
+          nullable: true
+          example: null
+        location:
+          type: object
+          nullable: true
+          properties:
+            value:
+              type: string
+              example: ap
+            label:
+              type: string
+              example: Andhra Pradesh
+          example: null
+        about:
+          type: string
+          nullable: true
+          example: null
+        share_link:
+          type: string
+          nullable: true
+          example: null
+        status:
+          type: string
+          example: ACTIVE
+        image:
+          type: string
+          nullable: true
+          example: null
+        has_accepted_terms_and_conditions:
+          type: boolean
+          example: true
+        languages:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: en_in
+              label:
+                type: string
+                example: English
+          example: null
+        preferred_language:
+          type: object
+          properties:
+            value:
+              type: string
+              example: en
+            label:
+              type: string
+              example: English
+        tenant_code:
+          type: string
+          example: default
+        meta:
+          type: object
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          example: '2026-07-15T10:56:20.430Z'
+        updated_at:
+          type: string
+          example: '2026-07-15T10:56:21.449Z'
+        deleted_at:
+          type: string
+          nullable: true
+          example: null
+        organizations:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                example: 1
+              name:
+                type: string
+                example: Default Organization
+              code:
+                type: string
+                example: default_code
+              description:
+                type: string
+                example: Updated via replay script
+              status:
+                type: string
+                example: ACTIVE
+              related_orgs:
+                type: array
+                items:
+                  type: number
+                example:
+                  - 999999999
+              tenant_code:
+                type: string
+                example: default
+              meta:
+                type: object
+                nullable: true
+                example: null
+              created_by:
+                type: number
+                nullable: true
+                example: null
+              updated_by:
+                type: number
+                example: 19
+              roles:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      example: 8
+                    title:
+                      type: string
+                      example: org_admin
+                    label:
+                      type: string
+                      nullable: true
+                      example: null
+                    user_type:
+                      type: number
+                      example: 1
+                    status:
+                      type: string
+                      example: ACTIVE
+                    organization_id:
+                      type: number
+                      example: 1
+                    visibility:
+                      type: string
+                      example: PUBLIC
+                    tenant_code:
+                      type: string
+                      example: default
+        permissions:
+          type: array
+          description: >
+            Permissions grouped by module, derived from the user's roles. A
+            representative subset of module entries is shown here.
+          x-internal-note: >-
+            services/user.js#getPermissions. The captured example contains 12
+            module entries; only a representative subset is shown here.
+          items:
+            type: object
+            properties:
+              module:
+                type: string
+                example: user
+              request_type:
+                type: array
+                items:
+                  type: string
+                example:
+                  - POST
+                  - DELETE
+                  - GET
+                  - PUT
+                  - PATCH
+              service:
+                type: string
+                example: user
+        image_cloud_path:
+          type: string
+          nullable: true
+          example: null
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                example: 1
+              type:
+                type: string
+                example: formsrggjf
+              version:
+                type: number
+                example: 0
+        correlation:
+          type: string
+          example: 45157680-2a5d-45f3-bb47-88ab82201dca
+userProfileReadResponse401:
+  description: >
+    Unauthorized. Returned when no valid access token is provided.
+  x-internal-note: >-
+    Captured example, 'missing token -> 401' case. Produced by the auth
+    middleware, not by services/user.js itself.
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: UNAUTHORIZED
+    message:
+      type: string
+      example: Unauthorized request
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 519851b7-2fc3-430e-81d3-7607bbe6315b
+userProfileReadResponse404Gap:
+  description: >
+    Not Found. Returned when no user or share link matches. Note that the
+    response body's responseCode value is 'UNAUTHORIZED' even though the
+    HTTP status code is 404.
+  x-internal-note: >-
+    services/user.js read() returns message 'USER_NOT_FOUND' with statusCode
+    httpStatusCode.not_found (404) when no user/share_link matches (the code
+    sets responseCode to 'UNAUTHORIZED' on this branch even though the
+    statusCode is 404 -- this looks like a copy/paste inconsistency in the
+    source, flagged rather than silently "corrected"). No captured example
+    exists for this endpoint+status in captured-responses.json, so no example
+    values are given -- shape only.
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    error:
+      type: array
+      items:
+        type: string
+userProfileReadResponse406Gap:
+  description: >
+    Not Acceptable. Returned when the looked-up user's organization has no
+    roles.
+  x-internal-note: >-
+    services/user.js read() returns message 'ROLE_NOT_FOUND' with statusCode
+    httpStatusCode.not_acceptable (406) on this branch. No captured example
+    exists for this endpoint+status. Shape only, no example values.
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    error:
+      type: array
+      items:
+        type: string
+userProfileUpdateRequest:
+  type: object
+  description: >
+    Request body for updating the authenticated user's own profile. All
+    fields are optional, and there are no cross-field validation rules for
+    this operation.
+  x-internal-note: >-
+    controllers/v1/user.js#update -> services/user.js#update. All fields are
+    optional per validators/v1/user.js#update -- there are no cross-field
+    rules for this operation (services/user.js and controllers/v1/user.js
+    both had zero matches in cross-field-rules.json).
+  properties:
+    name:
+      type: string
+      description: User's name. Must match ^[A-Za-z ]+$ if provided (letters and spaces only).
+      example: John Doe
+    about:
+      type: string
+      description: Short bio. Must match ^[a-zA-Z0-9\-.,\s]+$ if provided.
+      example: Experienced teacher
+    has_accepted_terms_and_conditions:
+      type: boolean
+      example: true
+    languages:
+      type: array
+      items:
+        type: string
+      example:
+        - en
+    image:
+      type: string
+      description: Image path/URL string.
+      example: profile-images/user22.png
+userProfileUpdateResponse202:
+  description: Accepted. Returned when the profile update succeeds.
+  x-internal-note: Captured example (services/user.js update()), 'happy path' case.
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Profile updated successfully.
+    result:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 22
+        email:
+          type: string
+          example: mentee_3t7m88mkgp@tunerlabs.com
+        email_verified:
+          type: string
+          example: 'false'
+        name:
+          type: string
+          example: Nevil Mathew
+        username:
+          type: string
+          example: mentee_3t7m88mvl5
+        phone:
+          type: string
+          nullable: true
+          example: null
+        phone_code:
+          type: string
+          nullable: true
+          example: null
+        location:
+          type: object
+          nullable: true
+          properties:
+            value:
+              type: string
+              example: ap
+            label:
+              type: string
+              example: default
+        about:
+          type: string
+          example: Replay test user
+        share_link:
+          type: string
+          nullable: true
+          example: null
+        status:
+          type: string
+          example: ACTIVE
+        image:
+          type: string
+          nullable: true
+          example: null
+        has_accepted_terms_and_conditions:
+          type: boolean
+          example: true
+        languages:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: en_in
+              label:
+                type: string
+                example: English
+          example: null
+        preferred_language:
+          type: object
+          properties:
+            value:
+              type: string
+              example: en
+            label:
+              type: string
+              example: English
+        configs:
+          type: object
+          nullable: true
+          example: null
+        tenant_code:
+          type: string
+          example: default
+        roles:
+          type: array
+          items:
+            type: number
+          example:
+            - 8
+            - 6
+        meta:
+          type: object
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          example: '2026-07-15T10:56:20.430Z'
+        updated_at:
+          type: string
+          example: '2026-07-15T10:56:22.100Z'
+        deleted_at:
+          type: string
+          nullable: true
+          example: null
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                example: 1
+              type:
+                type: string
+                example: formsrggjf
+              version:
+                type: number
+                example: 0
+        correlation:
+          type: string
+          example: 0cd1a696-e455-4390-9667-de370ef08827
+userProfileUpdateResponse400EmailUpdateGap:
+  description: >
+    Bad Request. Returned when the request body includes an 'email' field,
+    since email cannot be changed through this endpoint.
+  x-internal-note: >-
+    services/user.js update() returns message 'EMAIL_UPDATE_FAILED' with
+    statusCode httpStatusCode.bad_request (400) whenever bodyData contains an
+    'email' key at all (the update validator doesn't accept 'email', so this
+    can only be hit by sending an undocumented field). No captured example
+    exists for this endpoint+status. Shape only, no example values.
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    error:
+      type: array
+      items:
+        type: string
+userProfileUpdateResponse401Gap:
+  description: >
+    Unauthorized. Returned when the access token's user id/tenant code does
+    not resolve to a user.
+  x-internal-note: >-
+    services/user.js update() returns message 'USER_NOT_FOUND' with
+    statusCode httpStatusCode.unauthorized (401) on this branch. No captured
+    example exists. Shape only, no example values.
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    error:
+      type: array
+      items:
+        type: string
+userProfileUpdateResponse400ValidationGap:
+  description: >
+    Bad Request. Returned when a submitted field's value does not match the
+    organization's configured entity-type rules. The response includes a
+    result array of validation errors.
+  x-internal-note: >-
+    services/user.js update() returns message 'VALIDATION_FAILED' with
+    statusCode httpStatusCode.bad_request (400) and a result array of
+    entity-type validation errors (utils.validateInput) when a submitted
+    field's value doesn't match the org's configured entity-type rules. No
+    captured example exists for this endpoint+status. Shape only, no example
+    values -- the 'result' error item shape itself is generated by a shared
+    utils helper outside this domain's scope (utils.validateInput), so it is
+    not modeled here.
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items:
+        type: object
+userProfileById200Response:
+  description: OK. Returned when a user profile is found by id or share link.
+  x-internal-note: Captured example (services/user.js profileById()), 'happy path' case.
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: User profile fetched successfully!
+    result:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 22
+        email_verified:
+          type: string
+          example: 'false'
+        name:
+          type: string
+          example: Nevil Mathew
+        username:
+          type: string
+          example: mentee_3t7m88mvl5
+        location:
+          type: object
+          nullable: true
+          properties:
+            value:
+              type: string
+              example: ap
+            label:
+              type: string
+              example: Andhra Pradesh
+          example: null
+        about:
+          type: string
+          nullable: true
+          example: null
+        share_link:
+          type: string
+          nullable: true
+          example: null
+        status:
+          type: string
+          example: ACTIVE
+        image:
+          type: string
+          nullable: true
+          example: null
+        has_accepted_terms_and_conditions:
+          type: boolean
+          example: true
+        languages:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: en_in
+              label:
+                type: string
+                example: English
+          example: null
+        preferred_language:
+          type: object
+          properties:
+            value:
+              type: string
+              example: en
+            label:
+              type: string
+              example: English
+        tenant_code:
+          type: string
+          example: default
+        meta:
+          type: object
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          example: '2026-07-15T10:56:20.430Z'
+        updated_at:
+          type: string
+          example: '2026-07-15T10:56:21.449Z'
+        deleted_at:
+          type: string
+          nullable: true
+          example: null
+        organizations:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                example: 1
+              name:
+                type: string
+                example: Default Organization
+              code:
+                type: string
+                example: default_code
+              description:
+                type: string
+                example: Updated via replay script
+              status:
+                type: string
+                example: ACTIVE
+              related_orgs:
+                type: array
+                items:
+                  type: number
+                example:
+                  - 999999999
+              tenant_code:
+                type: string
+                example: default
+              meta:
+                type: object
+                nullable: true
+                example: null
+              created_by:
+                type: number
+                nullable: true
+                example: null
+              updated_by:
+                type: number
+                example: 19
+              roles:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      example: 8
+                    title:
+                      type: string
+                      example: org_admin
+                    label:
+                      type: string
+                      nullable: true
+                      example: null
+                    user_type:
+                      type: number
+                      example: 1
+                    status:
+                      type: string
+                      example: ACTIVE
+                    organization_id:
+                      type: number
+                      example: 1
+                    visibility:
+                      type: string
+                      example: PUBLIC
+                    tenant_code:
+                      type: string
+                      example: default
+                    translations:
+                      type: object
+                      nullable: true
+                      example: null
+        image_cloud_path:
+          type: string
+          nullable: true
+          example: null
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                example: 1
+              type:
+                type: string
+                example: formsrggjf
+              version:
+                type: number
+                example: 0
+        correlation:
+          type: string
+          example: c782a6a5-5752-4fa2-9dfb-875ce4353e00
+userProfileById404Response:
+  description: Not Found. Returned when no user profile matches the given id.
+  x-internal-note: Captured example, 'not-found id -> 404' case.
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: User not found.
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 57c1ce34-3ae9-4fd7-8a88-6b5e8251f5ce
+userProfileById422Gap:
+  description: >
+    Unprocessable Entity. Returned in two cases: (1) no id or other lookup
+    field was provided, or (2) a phone number was given without a phone code
+    and no default phone code is configured.
+  x-internal-note: >-
+    services/user.js profileById() returns message 'VALIDATION_FAILED' with
+    statusCode httpStatusCode.unprocessable_entity (422) in these two cases
+    (the second relies on process.env.DEFAULT_PHONE_CODE not being set). No
+    captured example exists for this endpoint+status. Shape only, no example
+    values.
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    error:
+      type: array
+      items:
+        type: string
+userProfileShare200Response:
+  description: OK. Returned when a profile share link is generated successfully.
+  x-internal-note: Captured example (services/user.js share()), 'happy path' case.
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Profile share link generated successfully
+    result:
+      type: object
+      properties:
+        shareLink:
+          type: string
+          example: b6d767d2f8ed5d21a44b0e5886680cb9
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                example: 1
+              type:
+                type: string
+                example: formsrggjf
+              version:
+                type: number
+                example: 0
+        correlation:
+          type: string
+          example: 914ed5b2-e779-42a1-bec2-19a3120f6154
+userProfileShare400Response:
+  description: >
+    Bad Request. Returned when no user is found for the given id.
+  x-internal-note: >-
+    Captured example, 'not-found id -> 404' case (note: the
+    captured-responses.json case label says '404' but the actual status code
+    recorded is 400 -- this matches services/user.js share(), which uses
+    httpStatusCode.bad_request (400) for USER_NOT_FOUND; the case label
+    itself appears to be a mislabel from the capture script, not a code
+    issue).
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: User not found.
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: a013977e-c11f-403b-87fd-b9d7f8eb84b9
+userSetLanguagePreferenceRequest:
+  type: object
+  description: >
+    Request body for setting the authenticated user's preferred language.
+  x-internal-note: validators/v1/user.js#setLanguagePreference.
+  required:
+    - preferred_language
+  properties:
+    preferred_language:
+      type: string
+      description: Preferred language value/code.
+      example: en
+userSetLanguagePreferenceResponse202:
+  description: Accepted. Returned when the language preference update succeeds.
+  x-internal-note: >-
+    Captured example (services/user.js setLanguagePreference()), 'happy
+    path' case.
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Your language is changed successfully
+    result:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 22
+        email:
+          type: string
+          description: Encrypted email ciphertext as returned by this endpoint (unlike read/update, this endpoint does not decrypt email/phone before responding).
+          example: 652ad9bf40fd73f960ae4fbf5178c826045a570b3c5e0757e9040156203f9f39
+        email_verified:
+          type: string
+          example: 'false'
+        name:
+          type: string
+          example: Nevil Mathew
+        username:
+          type: string
+          example: mentee_3t7m88mvl5
+        phone:
+          type: string
+          nullable: true
+          example: null
+        phone_code:
+          type: string
+          nullable: true
+          example: null
+        location:
+          type: string
+          example: ap
+        about:
+          type: string
+          example: Replay test user
+        share_link:
+          type: string
+          example: b6d767d2f8ed5d21a44b0e5886680cb9
+        status:
+          type: string
+          example: ACTIVE
+        image:
+          type: string
+          nullable: true
+          example: null
+        has_accepted_terms_and_conditions:
+          type: boolean
+          example: true
+        languages:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: en_in
+              label:
+                type: string
+                example: English
+          example: null
+        preferred_language:
+          type: string
+          example: en
+        configs:
+          type: object
+          nullable: true
+          example: null
+        tenant_code:
+          type: string
+          example: default
+        roles:
+          type: array
+          items:
+            type: number
+          example:
+            - 8
+            - 6
+        meta:
+          type: object
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          example: '2026-07-15T10:56:20.430Z'
+        updated_at:
+          type: string
+          example: '2026-07-15T10:56:22.193Z'
+        deleted_at:
+          type: string
+          nullable: true
+          example: null
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                example: 1
+              type:
+                type: string
+                example: formsrggjf
+              version:
+                type: number
+                example: 0
+        correlation:
+          type: string
+          example: f8cc4552-0251-44b3-b39f-cf5f1a80ef12
+userSetLanguagePreferenceResponse401Gap:
+  description: >
+    Unauthorized. Returned when the access token's user id/tenant code does
+    not resolve to a user.
+  x-internal-note: >-
+    services/user.js setLanguagePreference() returns message 'USER_NOT_FOUND'
+    with statusCode httpStatusCode.unauthorized (401) on this branch. No
+    captured example exists. Shape only, no example values.
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    error:
+      type: array
+      items:
+        type: string
+userSetLanguagePreferenceResponse400Gap:
+  description: >
+    Bad Request. Returned when the submitted preferred_language value does
+    not match the organization's configured entity-type rules. The response
+    includes a result array of validation errors.
+  x-internal-note: >-
+    services/user.js setLanguagePreference() returns message
+    'PROFILE_UPDATION_FAILED' with statusCode httpStatusCode.bad_request (400)
+    and a result array of entity-type validation errors (utils.validateInput)
+    when preferred_language fails the org's configured entity-type rules. No
+    captured example exists for this endpoint+status. Shape only, no example
+    values.
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items:
+        type: object
+userList200Response:
+  description: User list
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Mentor list fetched successfully.
+    result:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                example: A
+              values:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: 1
+                    name:
+                      type: string
+                      example: jhon
+                    image:
+                      type: string
+                      example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png
+        count:
+          type: number
+          example: 1

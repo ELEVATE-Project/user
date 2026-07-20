@@ -1,0 +1,306 @@
+file:
+  getSignedUrl:
+    get:
+      summary: Cloud Services - Get Signed URL
+      operationId: getSignedUrl
+      tags:
+        - Cloud Services APIs
+      description: 'This API is associated with cloud services for obtaining a signed URL.
+
+        - Endpoint for cloud services: `/user/v1/cloud-services/file/getSignedUrl`
+
+        - Mandatory parameters marked as `required` must have valid values.
+
+        - Parameters cannot be empty or null.
+
+        - `fileName` is the only required query parameter. Optional query parameters
+        `dynamicPath` (overrides the default `users/{id}-{timestamp}-` prefix) and
+        `public` (`true` targets the public asset bucket) are also accepted.
+
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available in login API
+            Response.
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: fileName
+          required: true
+          description: Name of the file to be uploaded. Must not be empty.
+          x-internal-note: >-
+            Validated server-side (validators/v1/cloud-services.js) — returns
+            'fileName field is empty' when missing/blank. No captured example
+            for this failure case.
+          schema:
+            type: string
+          example: image.jpg
+        - in: query
+          name: dynamicPath
+          required: false
+          description: Optional. When provided, overrides the default destination path
+            (`users/{userId}-{timestamp}-{fileName}`) with `{dynamicPath}/{fileName}`. Not covered
+            by any server-side validator (no requiredness/format enforced).
+          schema:
+            type: string
+          example: profile-images
+        - in: query
+          name: public
+          required: false
+          description: Optional. When set to the literal string `true`, the signed URL targets the
+            public asset bucket (`PUBLIC_ASSET_BUCKETNAME`) instead of the default private storage
+            bucket. Any other value (or absence) is treated as `false`. Not covered by any
+            server-side validator.
+          schema:
+            type: string
+            enum:
+              - 'true'
+              - 'false'
+          example: 'false'
+      responses:
+        '200':
+          description: OK. Signed URL obtained successfully.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/cloudServices.yaml#/cloudServicesResponse200
+              example:
+                responseCode: OK
+                message: Signed Url Generated Successfully.
+                result:
+                  signedUrl: https://mentoring-prod-storage-private.s3.ap-south-1.amazonaws.com/users/22-1784112986633-replay-test.csv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20260715%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20260715T105626Z&X-Amz-Expires=900&X-Amz-Signature=2fc0a2468900426ec838e8be740c743249414ade6eb233e2bb0eac7efe75c84a&X-Amz-SignedHeaders=host&x-id=PutObject
+                  filePath: users/22-1784112986633-replay-test.csv
+                  destFilePath: users/22-1784112986633-replay-test.csv
+                meta:
+                  formsVersion:
+                    - id: 1
+                      type: formsrggjf
+                      version: 0
+                    - id: 2
+                      type: formsrggjf
+                      version: 0
+                    - id: 3
+                      type: formcsfgof
+                      version: 0
+                    - id: 4
+                      type: formcsfgof
+                      version: 0
+                    - id: 5
+                      type: formsrggjf
+                      version: 0
+                    - id: 6
+                      type: formhvedht
+                      version: 0
+                    - id: 7
+                      type: formsrggjf
+                      version: 0
+                    - id: 8
+                      type: formcsfgof
+                      version: 0
+                    - id: 9
+                      type: formhvedht
+                      version: 0
+                  correlation: 2d1dc83e-8c81-41fa-8fc9-cdb86b167b62
+        '401':
+          description: Unauthorized. Missing or invalid X-auth-token.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/cloudServices.yaml#/cloudServicesUnauthorizedResponse401
+              example:
+                responseCode: UNAUTHORIZED
+                error: []
+                meta:
+                  correlation: 6a8c8513-0ac8-4eda-9298-576ea4752b1a
+                message: You do not have the required permissions to access this resource. Please contact your administrator for assistance.
+        '422':
+          description: >-
+            Unprocessable Entity. `fileName` query parameter is missing or
+            empty.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/cloudServices.yaml#/cloudServicesValidationErrorResponse422
+  getDownloadableUrl:
+    get:
+      summary: Cloud Services - Get Downloadable URL
+      operationId: getDownloadableUrl
+      tags:
+        - Cloud Services APIs
+      description: 'This API is associated with cloud services for obtaining a downloadable URL.
+
+        - Endpoint for cloud services: `/user/v1/cloud-services/file/getDownloadableUrl`
+
+        - Mandatory parameters marked as `required` must have valid values.
+
+        - Parameters cannot be empty or null.
+
+        - `filePath` is supplied as a query parameter. The optional `public` query
+        parameter (`true`) targets the public asset bucket.
+
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available in login API
+            Response.
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: filePath
+          required: true
+          description: Path of the file to be downloaded.
+          x-internal-note: >-
+            This endpoint has no entry in validators/v1/cloud-services.js, so
+            there is no server-side requiredness/format check; it is marked
+            required here only because it is the sole functional input of the
+            operation.
+          schema:
+            type: string
+          example: users/62832531a05cbd57b273aebb-1654149589875-image.jpg
+        - in: query
+          name: public
+          required: false
+          description: Optional. When set to the literal string `true`, the downloadable URL is
+            generated against the public asset bucket. Not covered by any server-side validator.
+          schema:
+            type: string
+            enum:
+              - 'true'
+              - 'false'
+          example: 'false'
+      responses:
+        '200':
+          description: OK. Downloadable URL obtained successfully.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/cloudServices.yaml#/cloudServicesDownloadResponse200
+              example:
+                responseCode: OK
+                message: Download Url Generated Successfully.
+                result: https://mentoring-prod-storage-private.s3.ap-south-1.amazonaws.com/nonexistent/path/file.csv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20260715%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20260715T105626Z&X-Amz-Expires=900&X-Amz-Signature=74e535dcd6dccd9d6dd5d0398cac9ee99d066408ec04a44c6e5f7690c74587aa&X-Amz-SignedHeaders=host&x-id=GetObject
+                meta:
+                  formsVersion:
+                    - id: 1
+                      type: formsrggjf
+                      version: 0
+                    - id: 2
+                      type: formsrggjf
+                      version: 0
+                    - id: 3
+                      type: formcsfgof
+                      version: 0
+                    - id: 4
+                      type: formcsfgof
+                      version: 0
+                    - id: 5
+                      type: formsrggjf
+                      version: 0
+                    - id: 6
+                      type: formhvedht
+                      version: 0
+                    - id: 7
+                      type: formsrggjf
+                      version: 0
+                    - id: 8
+                      type: formcsfgof
+                      version: 0
+                    - id: 9
+                      type: formhvedht
+                      version: 0
+                  correlation: c03cfc90-238a-401a-98b3-39d36ae80499
+        '401':
+          description: Unauthorized. Missing or invalid X-auth-token.
+          x-internal-note: Produced by the shared auth middleware; no endpoint-specific captured example.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/cloudServices.yaml#/cloudServicesUnauthorizedResponse401
+              example:
+                responseCode: UNAUTHORIZED
+                error: []
+                meta:
+                  correlation: 6a8c8513-0ac8-4eda-9298-576ea4752b1a
+                message: You do not have the required permissions to access this resource. Please contact your administrator for assistance.
+  getSampleCSV:
+    get:
+      summary: Cloud Services - Get Sample CSV
+      operationId: getSampleCSV
+      tags:
+        - Cloud Services APIs
+      description: 'This API is associated with cloud services for obtaining a sample CSV file for bulk
+        user create.
+
+        - Endpoint for cloud services: `/user/v1/cloud-services/file/getSampleCSV`
+
+        - Mandatory parameters marked as `required` must have valid values.
+
+        - Parameters cannot be empty or null.
+
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available in login API
+            Response.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Sample CSV obtained successfully.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/cloudServices.yaml#/getSampleCSVResponse200
+              example:
+                responseCode: OK
+                message: Download Url Generated Successfully.
+                result: https://mentoring-prod-storage-private.s3.ap-south-1.amazonaws.com/sample/bulk_user_creation.csv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20260715%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20260715T105626Z&X-Amz-Expires=900&X-Amz-Signature=5b5f8f39b29a9bbbd60d859a52574a4537608be13003c16af93c4d366d58e008&X-Amz-SignedHeaders=host&x-id=GetObject
+                meta:
+                  formsVersion:
+                    - id: 1
+                      type: formsrggjf
+                      version: 0
+                    - id: 2
+                      type: formsrggjf
+                      version: 0
+                    - id: 3
+                      type: formcsfgof
+                      version: 0
+                    - id: 4
+                      type: formcsfgof
+                      version: 0
+                    - id: 5
+                      type: formsrggjf
+                      version: 0
+                    - id: 6
+                      type: formhvedht
+                      version: 0
+                    - id: 7
+                      type: formsrggjf
+                      version: 0
+                    - id: 8
+                      type: formcsfgof
+                      version: 0
+                    - id: 9
+                      type: formhvedht
+                      version: 0
+                  correlation: 87b3b7e2-d27c-4504-b31f-110e90aef24d
+        '401':
+          description: Unauthorized. Missing or invalid X-auth-token.
+          x-internal-note: Produced by the shared auth middleware; no endpoint-specific captured example.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/cloudServices.yaml#/cloudServicesUnauthorizedResponse401
+              example:
+                responseCode: UNAUTHORIZED
+                error: []
+                meta:
+                  correlation: 6a8c8513-0ac8-4eda-9298-576ea4752b1a
+                message: You do not have the required permissions to access this resource. Please contact your administrator for assistance.

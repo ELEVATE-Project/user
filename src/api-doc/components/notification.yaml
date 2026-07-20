@@ -1,0 +1,317 @@
+createNotificationRequest:
+  type: object
+  description: Notification template create / update request body.
+  required:
+    - type
+    - code
+    - subject
+    - body
+  properties:
+    type:
+      type: string
+      description: Type of the notification template.
+      enum:
+        - sms
+        - email
+        - emailHeader
+        - emailFooter
+      example: email
+    code:
+      type: string
+      description: Unique code for the notification template (unique per organization + tenant).
+      example: tl-email-invite
+    subject:
+      type: string
+      description: Subject of the email.
+      example: Hi Welcome Back
+    body:
+      type: string
+      description: Body of the notification template.
+      example: <p>Dear User,</p> Welcome back to mentorEd
+    email_header:
+      type: string
+      description: Email header content (code of an emailHeader template).
+      example: email_header
+    email_footer:
+      type: string
+      description: Email footer content (code of an emailFooter template).
+      example: email_footer
+
+notificationTemplate:
+  type: object
+  description: A single notification template record.
+  properties:
+    id:
+      type: number
+      example: 126
+    type:
+      type: string
+      example: email
+    code:
+      type: string
+      example: tmpl_3t7oyoi82g
+    subject:
+      type: string
+      nullable: true
+      example: Replay Test Subject
+    body:
+      type: string
+      example: <p>Replay test body</p>
+    status:
+      type: string
+      example: ACTIVE
+    email_header:
+      type: string
+      nullable: true
+      example: null
+    email_footer:
+      type: string
+      nullable: true
+      example: null
+    organization_code:
+      type: string
+      example: default_code
+    tenant_code:
+      type: string
+      example: default
+    created_by:
+      type: string
+      nullable: true
+      example: '23'
+    updated_by:
+      type: string
+      nullable: true
+      example: null
+    created_at:
+      type: string
+      format: date-time
+      example: '2026-07-15T10:56:26.206Z'
+    updated_at:
+      type: string
+      format: date-time
+      example: '2026-07-15T10:56:26.206Z'
+    deleted_at:
+      type: string
+      format: date-time
+      nullable: true
+      example: null
+
+notificationMeta:
+  type: object
+  description: Response metadata attached by the framework.
+  properties:
+    formsVersion:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: number
+          type:
+            type: string
+          version:
+            type: number
+    correlation:
+      type: string
+      example: 42111943-7221-49cb-81fe-c0afcc974180
+
+# 201 - template created (POST /user/v1/notification/template)
+createNotification201Response:
+  type: object
+  description: Notification template created successfully.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Notification template created successfully
+    result:
+      $ref: '#/notificationTemplate'
+    meta:
+      $ref: '#/notificationMeta'
+  example:
+    responseCode: OK
+    message: Notification template created successfully
+    result:
+      status: ACTIVE
+      id: 126
+      type: email
+      code: tmpl_3t7oyoi82g
+      subject: Replay Test Subject
+      body: <p>Replay test body</p>
+      organization_code: default_code
+      tenant_code: default
+      created_by: '23'
+      updated_at: '2026-07-15T10:56:26.206Z'
+      created_at: '2026-07-15T10:56:26.206Z'
+      email_header: null
+      email_footer: null
+      updated_by: null
+      deleted_at: null
+    meta:
+      formsVersion:
+        - { id: 1, type: formsrggjf, version: 0 }
+        - { id: 2, type: formsrggjf, version: 0 }
+        - { id: 3, type: formcsfgof, version: 0 }
+      correlation: 42111943-7221-49cb-81fe-c0afcc974180
+
+# 200 - list all templates (GET /user/v1/notification/template)
+listNotification200Response:
+  type: object
+  description: Notification templates fetched successfully.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Notification template fetched successfully
+    result:
+      type: array
+      items:
+        $ref: '#/notificationTemplate'
+    meta:
+      $ref: '#/notificationMeta'
+  example:
+    responseCode: OK
+    message: Notification template fetched successfully
+    result:
+      - id: 1
+        type: email
+        code: generic_invite
+        subject: Welcome Aboard as a {roles}
+        body: <p>Dear {name},</p> We are delighted to inform you...
+        status: ACTIVE
+        email_header: email_header
+        email_footer: email_footer
+        created_by: null
+        updated_by: null
+        tenant_code: default
+        organization_code: default_code
+        created_at: '2026-07-15T09:40:39.000Z'
+        updated_at: '2026-07-15T09:40:40.000Z'
+        deleted_at: null
+      - id: 22
+        type: sms
+        code: emailotp
+        subject: null
+        body: Your {app_name} OTP to reset your password is {otp}. Please do not share this OTP with anyone.
+        status: ACTIVE
+        email_header: null
+        email_footer: null
+        created_by: null
+        updated_by: null
+        tenant_code: default
+        organization_code: default_code
+        created_at: '2026-07-15T09:40:42.000Z'
+        updated_at: '2026-07-15T09:40:42.000Z'
+        deleted_at: null
+    meta:
+      formsVersion:
+        - { id: 1, type: formsrggjf, version: 0 }
+      correlation: b269ca14-dcd6-4add-89b5-8bd6c669e0aa
+
+# 202 - template updated (PATCH /user/v1/notification/template/{id})
+updateNotification202Response:
+  type: object
+  description: Notification template updated successfully. `result` is returned as an empty array.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Notification template updated successfully
+    result:
+      type: array
+      items: {}
+      example: []
+    meta:
+      $ref: '#/notificationMeta'
+  example:
+    responseCode: OK
+    message: Notification template updated successfully
+    result: []
+    meta:
+      formsVersion:
+        - { id: 1, type: formsrggjf, version: 0 }
+      correlation: 4e7107a0-90bb-41b0-8cad-1384165a1d6d
+
+# 400 - template not found (GET /user/v1/notification/template/{id}, PATCH update)
+notFound400Response:
+  type: object
+  description: Notification template not found.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items: {}
+      example: []
+    message:
+      type: string
+      example: Notification template not found
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: d04c2435-f127-46bc-a795-f970b45e63ca
+  example:
+    responseCode: CLIENT_ERROR
+    error: []
+    meta:
+      correlation: d04c2435-f127-46bc-a795-f970b45e63ca
+    message: Notification template not found
+
+# 500 - server error (e.g. DB error / missing required field surfaced as SERVER_ERROR)
+serverError500Response:
+  type: object
+  description: Unhandled server error.
+  properties:
+    responseCode:
+      type: string
+      example: SERVER_ERROR
+    message:
+      type: string
+      example: Oops! Something Went Wrong.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 12923198-0cb9-4137-8a25-5f8db4e45fa3
+  example:
+    responseCode: SERVER_ERROR
+    message: Oops! Something Went Wrong.
+    meta:
+      correlation: 12923198-0cb9-4137-8a25-5f8db4e45fa3
+
+# 400 - caller is not an admin (controller guard USER_IS_NOT_A_ADMIN).
+# GAP: no entry in captured-responses.json for this branch on any notification
+# endpoint. Shape-only (types only) - do not treat the values below as real
+# captured data; the message key name itself is a literal string taken from
+# controllers/v1/notification.js (thrown via responses.failureResponse), but the
+# full wrapped body shape (meta/correlation/error keys, if any) is unverified.
+notAdmin400Response:
+  type: object
+  description: >-
+    Forbidden. Returned when the caller does not hold the ADMIN, ORG_ADMIN or
+    TENANT_ADMIN role required for this operation.
+  x-internal-note: >-
+    Emitted by the controller guard (message key USER_IS_NOT_A_ADMIN). No
+    captured response body is available for this branch - schema is
+    shape-only, no example values.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+# NOTE: a dedicated 409 (alreadyExists409Response) used to be documented here
+# for the duplicate-template case, but it's unreachable in the real service
+# (services/notification.js's statusCode: httpStatusCode.conflict is
+# undefined, so this surfaces as a 500 instead) - see the gap_template_
+# already_exists example under the 500 response in paths/notification.yaml,
+# and TODO-reverted-bugfixes.md.

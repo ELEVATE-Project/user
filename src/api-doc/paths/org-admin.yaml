@@ -1,0 +1,624 @@
+# NOTE on routing (see routes/index.js generic router + captured-responses.json
+# keys, which reflect the live boot's actual method dispatch):
+#   - Most methods:        /user/v1/org-admin/{method}
+#   - getRequestDetails:    /user/v1/org-admin/getRequestDetails/{id}   (path param, GET)
+#   - updateUser:           /user/v1/org-admin/updateUser/{id}          (path param, POST)
+#   - deactivateUser:       /user/v1/org-admin/deactivateUser           (NO id -- body-only)
+# GAP: the top-level src/api-doc/openapi.yaml currently wires
+# `/user/v1/org-admin/deactivateUser/{id}` -> `./paths/org-admin.yaml#/deactivateUser/{id}`,
+# which is wrong for this controller (org-admin's deactivateUser takes
+# {ids[], emails[]} in the body and never reads req.params.id -- that {id}
+# shape belongs to the unrelated admin.js deactivateUser). openapi.yaml also
+# has no top-level entry at all for updateUser or createUsers, and its
+# getRequestDetails entry is missing the /{id} segment. Fixing openapi.yaml
+# is out of scope for this domain pass (it is a shared, multi-domain file);
+# recorded as a gap instead. The structure below is written so the id-only
+# fix is a one-line change in openapi.yaml.
+getRequests:
+  post:
+    summary: Get Requests
+    operationId: getRequests
+    description: 'Get a list of organization requests based on specified filters.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+
+      '
+    x-internal-note: >-
+      No express-validator entry exists for this operation
+      (validators/v1/org-admin.js has no getRequests export); the request
+      body shape below is inferred from controller/service usage only, not
+      enforced ground truth.
+    tags:
+      - Org Admin APIs
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the org admin.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            $ref: ../components/org-admin.yaml#/getRequestsRequest
+    responses:
+      '200':
+        description: OK. Successfully fetched organization requests.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/getRequests200Response
+      '400':
+        description: >-
+          Bad Request. Returned when the caller is not an org_admin or
+          tenant_admin.
+        x-internal-note: No captured example for this status/message on this endpoint.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/orgAdminNotAdminResponse
+updateRequestStatus:
+  post:
+    summary: Update Request Status
+    operationId: updateRequestStatus
+    description: 'Update the status of an organization request.
+
+      - Endpoint: `/user/v1/org-admin/updateRequestStatus`.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+
+      '
+    tags:
+      - Org Admin APIs
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the org admin.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/org-admin.yaml#/updateRequestStatusRequest
+    responses:
+      '200':
+        description: OK. Successfully updated organization request status.
+        x-internal-note: No captured example for this status; shape-only schema.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/updateRequestStatus200Response
+      '400':
+        description: >-
+          Bad Request. Two distinct failure causes share this status code:
+          the request was already handled, or the update affected 0 rows.
+        x-internal-note: >-
+          Neither invalidOrgRoleRequest (INAVLID_ORG_ROLE_REQ) nor
+          orgRoleRequestFailed (ORG_ROLE_REQ_FAILED) has a captured body -
+          message values are the literal keys from services/org-admin.js,
+          shape-only otherwise.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: ../components/org-admin.yaml#/updateRequestStatus400InvalidResponse
+                - $ref: ../components/org-admin.yaml#/updateRequestStatus400FailedResponse
+                - $ref: ../components/org-admin.yaml#/orgAdminNotAdminResponse
+              discriminator:
+                propertyName: message
+            examples:
+              invalidOrgRoleRequest:
+                summary: Request already handled (not in REQUESTED status)
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  message: INAVLID_ORG_ROLE_REQ
+              orgRoleRequestFailed:
+                summary: Update query affected 0 rows
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  message: ORG_ROLE_REQ_FAILED
+      '500':
+        description: >-
+          Internal Server Error. This is the real, current behavior when
+          `request_id` doesn't match any request — a missing null check
+          causes an uncaught error instead of a clean 400.
+        x-internal-note: >-
+          services/org-admin.js updateRequestStatus() has no
+          `if (!requestDetail)` guard before reading `requestDetail.status`,
+          so a non-matching request_id throws instead of returning a clean
+          failureResponse. See TODO-reverted-bugfixes.md. The example below
+          is the live capture for this exact case (captured-responses.json,
+          key "POST /user/v1/org-admin/updateRequestStatus", case
+          "not-found request_id -> 404").
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/updateRequestStatus500Response
+            example:
+              responseCode: SERVER_ERROR
+              message: Oops! Something Went Wrong.
+              meta:
+                correlation: 57887cc5-885e-475c-b5dc-6daae99b2342
+getRequestDetails:
+  '{id}':
+    get:
+      summary: Get Request Details
+      operationId: getRequestDetails
+      description: >-
+        Get details of a specific organization request. The `id` is supplied
+        as a URL path parameter.
+      tags:
+        - Org Admin APIs
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the org admin.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: ID of the organization role-change request.
+          required: true
+          schema:
+            type: integer
+            example: 12
+      responses:
+        '200':
+          description: OK. Successfully fetched organization request details.
+          x-internal-note: No captured example for this status; shape-only schema.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/org-admin.yaml#/getRequestDetails200Response
+        '400':
+          description: >-
+            Bad Request. Two distinct causes share this status code: the
+            request was not found, or the caller is not an org_admin or
+            tenant_admin.
+          x-internal-note: >-
+            Only the requestNotFound example (REQUEST_NOT_FOUND) is a real
+            capture; the not-an-admin case has no captured example.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: ../components/org-admin.yaml#/getRequestDetails400Response
+                  - $ref: ../components/org-admin.yaml#/orgAdminNotAdminResponse
+              examples:
+                requestNotFound:
+                  summary: No request matches id/organization_id/tenant_code (real capture)
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    message: Role Change Request not found.
+                    meta:
+                      correlation: 7c447951-c904-40ef-b0ac-8b8e15777b6c
+bulkUserCreate:
+  post:
+    summary: Bulk User Create
+    operationId: bulkUserCreate
+    description: 'Create multiple users in bulk using a CSV file (invite/upload flow).
+
+      - Endpoint: `/user/v1/org-admin/bulkUserCreate`.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+
+      '
+    tags:
+      - Org Admin APIs
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the org admin.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/org-admin.yaml#/bulkUserCreateRequest
+    responses:
+      '200':
+        description: OK. Successfully queued bulk user invites CSV.
+        x-internal-note: No captured example for this status; shape-only schema.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/bulkUserCreate200Response
+      '400':
+        description: >-
+          Bad Request. Two distinct causes share this status code: creation
+          of the file-upload record failed, or the caller is not an
+          org_admin or tenant_admin.
+        x-internal-note: Neither cause has a captured example for this endpoint.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: ../components/org-admin.yaml#/bulkUserCreate400Response
+                - $ref: ../components/org-admin.yaml#/orgAdminNotAdminResponse
+      '500':
+        description: Internal Server Error. Returned when an unhandled error occurs while creating the file-upload record or queuing the job.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/bulkUserCreate500Response
+            example:
+              responseCode: SERVER_ERROR
+              message: Oops! Something Went Wrong.
+              meta:
+                correlation: 904457e7-e82d-4a97-be83-83df3aaa336a
+getBulkInvitesFilesList:
+  get:
+    summary: Get Bulk Invite Files List
+    operationId: getBulkInvitesFilesList
+    description: 'Get a list of uploaded bulk invite CSV files.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+
+      '
+    x-internal-note: >-
+      No express-validator entry exists for this operation; the
+      pagination/status query parameters below are inferred from
+      controller/service usage only.
+    tags:
+      - Org Admin APIs
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the org admin.
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Page number for pagination.
+        required: false
+        schema:
+          type: integer
+      - name: limit
+        in: query
+        description: Number of items per page.
+        required: false
+        schema:
+          type: integer
+      - name: status
+        in: query
+        description: Optional filter on file-upload status.
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: OK. Successfully fetched bulk invite CSV list.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/getBulkInvitesFilesList200Response
+      '400':
+        description: >-
+          Bad Request. Returned when the caller is not an org_admin or
+          tenant_admin.
+        x-internal-note: No captured example for this status/message on this endpoint.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/orgAdminNotAdminResponse
+deactivateUser:
+  post:
+    summary: Deactivate User(s)
+    operationId: deactivateUserOrgAdmin
+    description: "Deactivate one or more users in the org admin's organization by
+      ID and/or email, passed as arrays in the request body.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+
+      - At least one of `ids` or `emails` must be provided; requests with
+      neither (or with both empty) are rejected before being processed - see
+      the 422 response.
+
+      "
+    x-internal-note: >-
+      The ids/emails at-least-one-of rule is defined in
+      cross-field-rules.json and enforced by an express-validator custom()
+      check (validators/v1/org-admin.js) that runs before the service is
+      invoked.
+    tags:
+      - Org Admin APIs
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the org admin.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/org-admin.yaml#/orgAdminDeactivateUserRequest
+          examples:
+            byIds:
+              summary: Deactivate by ids
+              value:
+                ids: [12, 13]
+            byEmails:
+              summary: Deactivate by emails
+              value:
+                emails: ['user@example.com']
+    responses:
+      '200':
+        description: OK. Users deactivated.
+        x-internal-note: No captured example for this status; shape-only schema.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/orgAdminDeactivateUser200Response
+      '400':
+        description: >-
+          Bad Request. Two distinct causes share this status code: no rows
+          were affected by the update, or the caller is not an org_admin or
+          tenant_admin.
+        x-internal-note: Neither cause has a captured example for this endpoint.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: ../components/org-admin.yaml#/orgAdminDeactivateUser400Response
+                - $ref: ../components/org-admin.yaml#/orgAdminNotAdminResponse
+      '422':
+        description: >-
+          Validation Failed. Returned when neither `ids` nor `emails` is
+          provided, or both are empty.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/orgAdminDeactivateUser422Response
+            example:
+              responseCode: CLIENT_ERROR
+              error: []
+              meta: {}
+              message: Provide at least one non-empty "emails" or "ids" array.
+inheritEntityType:
+  post:
+    summary: Inherit Entity Type
+    operationId: inheritEntityType
+    description: "Inherit an entity type from the default organization into the
+      caller's organization.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+
+      - Whether the caller's own organization is the default organization is
+      determined by comparing the caller's organization code against the
+      configured default organization code for the deployment. Because this
+      depends on deployment configuration, the caller's organization must
+      not itself be the default organization for this operation to succeed.
+
+      "
+    x-internal-note: >-
+      The default-organization check compares tokenInformation.organization_code
+      against the `DEFAULT_ORGANISATION_CODE` environment variable. This is a
+      deployment-config-dependent rule and is documented in prose here rather
+      than modeled as a schema constraint (it cannot be expressed from the
+      request body alone).
+    tags:
+      - Org Admin APIs
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the org admin.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/org-admin.yaml#/inheritEntityTypeRequest
+    responses:
+      '201':
+        description: Created. Entity type inherited successfully.
+        x-internal-note: >-
+          A previous draft incorrectly documented this as 202 Accepted with
+          a fabricated example body; corrected to 201 (httpStatusCode.created
+          in services/org-admin.js). No captured example exists - schema is
+          shape-only.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/inheritEntityType201Response
+      '400':
+        description: >-
+          Bad Request. Three distinct causes share this status code: caller's
+          org is the default org, no matching entity type found under the
+          default org, or caller is not an org_admin/tenant_admin.
+        x-internal-note: >-
+          Only userIsFromDefaultOrg below is a real capture. entityTypeNotFound
+          (ENTITY_TYPE_NOT_FOUND) has no captured body - shape-only.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: ../components/org-admin.yaml#/inheritEntityType400DefaultOrgResponse
+                - $ref: ../components/org-admin.yaml#/inheritEntityType400NotFoundResponse
+                - $ref: ../components/org-admin.yaml#/orgAdminNotAdminResponse
+            examples:
+              userIsFromDefaultOrg:
+                summary: Caller's organization is the default organization (real capture)
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  message: Users from the default organization are not permitted to proceed with this action.
+                  meta:
+                    correlation: 281c1bf5-0f52-4058-a0e9-4e6066fed5b3
+              entityTypeNotFound:
+                summary: No matching entity type in the default org (no captured body)
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  message: ENTITY_TYPE_NOT_FOUND
+updateUser:
+  '{id}':
+    post:
+      summary: Update User Roles (org admin)
+      operationId: updateUserRolesOrgAdmin
+      description: >-
+        Assign roles to a user within the caller's own organization.
+      x-internal-note: >-
+        Unlike every other org-admin endpoint, this controller method
+        performs no ORG_ADMIN_ROLE/TENANT_ADMIN_ROLE authorization check at
+        all (controllers/v1/org-admin.js updateUser has no
+        validateRoleAccess call), and no express-validator entry exists for
+        it either (validators/v1/org-admin.js has no updateUser export).
+        Any authenticated caller can invoke it. Flagged here as a known gap
+        rather than silently documented as if it were access-controlled.
+      tags:
+        - Org Admin APIs
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          description: ID of the user whose roles are being updated.
+          required: true
+          schema:
+            type: integer
+            example: 12
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/updateUserRequest
+      responses:
+        '200':
+          description: OK. Roles updated.
+          x-internal-note: No captured example for this status; shape-only schema.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/org-admin.yaml#/updateUser200Response
+        '400':
+          description: >-
+            Bad Request. Three distinct causes share this status code: user
+            not found, role lookup returned falsy, or body.organization_id
+            does not match the caller's own organization.
+          x-internal-note: >-
+            Only userNotFound below is a real capture. invalidRoleAssignments
+            (INVALID_ROLE_ASSIGNMENTS, likely-dead-code branch - see component
+            description) and noAccessToUpdateRoles
+            (YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES) have no captured body.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: ../components/org-admin.yaml#/updateUser400NotFoundResponse
+                  - $ref: ../components/org-admin.yaml#/updateUser400InvalidRoleResponse
+                  - $ref: ../components/org-admin.yaml#/updateUser400NoAccessResponse
+              examples:
+                userNotFound:
+                  summary: No user matches {id} (real capture)
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    message: User not found.
+                    meta:
+                      correlation: 8564f9de-7b4f-4746-a63a-43193ff08c13
+                invalidRoleAssignments:
+                  summary: Role lookup returned falsy (no captured body)
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    message: INVALID_ROLE_ASSIGNMENTS
+                noAccessToUpdateRoles:
+                  summary: body.organization_id != caller's organization_id (no captured body)
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    message: YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES
+createUsers:
+  post:
+    summary: Create Users (bulk, tenant-aware variant)
+    operationId: createUsersOrgAdmin
+    description: 'Bulk-create users via an uploaded CSV, with editable-field and
+      upload-type controls (tenant-code-aware variant of bulkUserCreate).
+
+      '
+    x-internal-note: >-
+      The ORG_ADMIN_ROLE/TENANT_ADMIN_ROLE authorization check is present in
+      controllers/v1/org-admin.js createUsers but commented out, so it
+      currently performs no role check at all. No express-validator entry
+      exists for this operation either (validators/v1/org-admin.js has no
+      createUsers export), so none of the request fields below are enforced
+      ground truth. No captured-responses.json entry exists for this
+      endpoint at all. `req?.body?.upload_type.toUpperCase()` is called with
+      no null-check before `.toUpperCase()` (confirmed by direct read of
+      controllers/v1/org-admin.js createUsers), so an absent upload_type
+      throws an uncaught TypeError, surfacing as a generic 500 rather than a
+      clean validation error. (A prior "Post-hoc correction" note here
+      claimed the call was fully optional-chained as
+      `req?.body?.upload_type?.toUpperCase()` and therefore safe - that was
+      itself wrong; the real source has no `?.` before `.toUpperCase()`. See
+      components/org-admin.yaml#/createUsersRequest for the same,
+      already-accurate description, and TODO-reverted-bugfixes.md.)
+    tags:
+      - Org Admin APIs
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            $ref: ../components/org-admin.yaml#/createUsersRequest
+    responses:
+      '200':
+        description: OK. Users created successfully.
+        x-internal-note: >-
+          No captured example exists for this endpoint at all; schema is
+          shape-only, inferred from the shared bulkCreate() service call
+          shape only.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/createUsers200Response
+      '400':
+        description: Bad Request.
+        x-internal-note: No captured example exists for this endpoint at all; shape-only schema.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/createUsers400Response

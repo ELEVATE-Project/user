@@ -1,0 +1,622 @@
+# -----------------------------------------------------------------------------
+# Entity domain components.
+# Every *Response schema below with a concrete `example` block is copied
+# verbatim from scripts/api-doc/captured-responses.json.
+# A few schemas (createUserEntity400Response, readUserEntity200Response,
+# deleteUserEntity400Response) exist only because openapi.yaml's shared
+# components.schemas registry already referenced them - they are kept as
+# shape-only schemas (no `example`) with a "GAP - NOT captured" description,
+# since no captured body exists for that status/message. Do not treat their
+# property names/values as verified; they are placeholders inferred from
+# sibling responses in this same file. Every such gap is also recorded in
+# scripts/api-doc/gaps.jsonl.
+# -----------------------------------------------------------------------------
+
+createUserEntityRequest:
+  type: object
+  required:
+    - value
+    - label
+    - type
+    - entity_type_id
+  properties:
+    value:
+      type: string
+      description: Alphanumeric characters and spaces allowed.
+      x-internal-note: Validated in validators/v1/entity.js.
+      example: AP
+    label:
+      type: string
+      description: Alphanumeric with spaces allowed.
+      x-internal-note: Validated in validators/v1/entity.js.
+      example: Andhra Pradesh
+    type:
+      type: string
+      description: Entity type classification. Must be uppercase with no spaces (e.g. SYSTEM).
+      example: SYSTEM
+    entity_type_id:
+      type: integer
+      example: 4
+    status:
+      type: string
+      description: Optional status of the entity. Must be uppercase with no spaces when provided.
+      example: ACTIVE
+
+createUserEntity201Response:
+  type: object
+  description: Entity created successfully.
+  x-internal-note: >-
+    Verbatim capture, 201, happy path. The code also emits 400
+    ENTITY_ALREADY_EXISTS (UniqueConstraintError) and 400
+    ENTITY_TYPE_NOT_FOUND (ForeignKeyConstraintError) from
+    services/entities.js `create` - neither has a captured example, see
+    gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Entity created successfully
+    result:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 789
+        value:
+          type: string
+          example: testval
+        label:
+          type: string
+          example: Test Value
+        status:
+          type: string
+          example: ACTIVE
+        type:
+          type: string
+          example: SYSTEM
+        entity_type_id:
+          type: number
+          example: 26
+        created_by:
+          type: number
+          example: 23
+        updated_by:
+          type: number
+          example: 23
+        tenant_code:
+          type: string
+          example: default
+        organization_code:
+          type: string
+          example: default_code
+        updated_at:
+          type: string
+          example: '2026-07-15T10:56:24.039Z'
+        created_at:
+          type: string
+          example: '2026-07-15T10:56:24.039Z'
+        deleted_at:
+          type: string
+          nullable: true
+          example: null
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              type:
+                type: string
+              version:
+                type: number
+        correlation:
+          type: string
+          example: 243b2c16-47ba-477a-9521-ef6b337c9dfe
+  example:
+    responseCode: OK
+    message: Entity created successfully
+    result:
+      status: ACTIVE
+      id: 789
+      value: testval
+      label: Test Value
+      type: SYSTEM
+      entity_type_id: 26
+      created_by: 23
+      updated_by: 23
+      tenant_code: default
+      organization_code: default_code
+      updated_at: '2026-07-15T10:56:24.039Z'
+      created_at: '2026-07-15T10:56:24.039Z'
+      deleted_at: null
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+      correlation: 243b2c16-47ba-477a-9521-ef6b337c9dfe
+
+deleteUserEntity422Response:
+  type: object
+  description: >-
+    Validation failed. Returned when the `id` path parameter is missing.
+  x-internal-note: No captured example exists for this status - shape-only, see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+            example: params
+          param:
+            type: string
+            example: id
+          msg:
+            type: string
+            example: id param is empty
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: params
+        param: id
+        msg: id param is empty
+    meta:
+      correlation: 5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b
+    message: Validation failed, Entered data is incorrect!
+
+entityList422Response:
+  type: object
+  description: >-
+    Validation failed. Returned when `entity_type_id` query parameter is
+    missing, empty, or non-numeric.
+  x-internal-note: No captured example exists for this status - shape-only, see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+            example: query
+          param:
+            type: string
+            example: entity_type_id
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: query
+        param: entity_type_id
+        msg: entity_type_id field is empty
+    meta:
+      correlation: 6f7a8b9c-0d1e-4f2a-8b3c-4d5e6f7a8b9c
+    message: Validation failed, Entered data is incorrect!
+
+createUserEntity422Response:
+  type: object
+  description: >-
+    Validation failed. Returned when required fields are missing or
+    malformed.
+  x-internal-note: Verbatim capture (express-validator, 422).
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+            example: body
+          param:
+            type: string
+            example: entity_type_id
+          msg:
+            type: string
+            example: entity_type_id field is empty
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 2668b2d5-6fbd-4a52-99f8-da3f9136366b
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: body
+        param: entity_type_id
+        msg: entity_type_id field is empty
+      - location: body
+        param: entity_type_id
+        msg: entity_type_id is invalid, must be numeric
+      - location: body
+        param: type
+        msg: type field is empty
+      - location: body
+        param: type
+        msg: type is invalid, must be in all caps and no spaces
+    meta:
+      correlation: 2668b2d5-6fbd-4a52-99f8-da3f9136366b
+    message: Validation failed, Entered data is incorrect!
+
+createUserEntity400Response:
+  type: object
+  description: >-
+    Bad Request. Returned when the entity could not be created because it
+    already exists, or because the referenced entity type does not exist.
+  x-internal-note: >-
+    GAP - not captured. The code (services/entities.js `create`) can return
+    400 with message ENTITY_ALREADY_EXISTS (sequelize UniqueConstraintError)
+    or 400 with message ENTITY_TYPE_NOT_FOUND (sequelize
+    ForeignKeyConstraintError), but scripts/api-doc/captured-responses.json
+    has no example for either. This schema documents shape only (inferred
+    from the same failureResponse() envelope used elsewhere in this domain,
+    e.g. updateUserEntity400Response) - values below are illustrative
+    placeholders, NOT a captured body. See gaps.jsonl (domain=entity,
+    endpoint=POST /user/v1/entity/create).
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: string
+    message:
+      type: string
+      description: Either "Entity already exists" or "Entity type not found",
+        depending on which constraint was violated.
+
+updateUserEntityRequest:
+  type: object
+  description: All fields optional; provide only the fields to change.
+  x-internal-note: Validated in validators/v1/entity.js `update`.
+  properties:
+    value:
+      type: string
+      description: Alphanumeric characters and spaces allowed.
+      example: en
+    label:
+      type: string
+      description: Alphanumeric with spaces allowed.
+      example: English
+    status:
+      type: string
+      description: Must be uppercase with no spaces when provided.
+      example: ACTIVE
+    type:
+      type: string
+      description: Entity type classification (uppercase, no spaces).
+      example: SYSTEM
+    entity_type_id:
+      type: number
+      description: The ID of the entity type.
+      example: 1
+
+updateUserEntity400Response:
+  type: object
+  description: >-
+    Not Found. Returned when the entity to update does not exist.
+  x-internal-note: >-
+    Verbatim capture, 400. The code also has a 202 ENTITY_UPDATED_SUCCESSFULLY
+    success path (services/entities.js `update`) and a second, distinct 400
+    ENTITY_ALREADY_EXISTS path (UniqueConstraintError on the same status
+    code) - neither has a captured example, see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 835b2cef-dcd4-45f1-ad72-a4066a7f1d7e
+    message:
+      type: string
+      example: Entity not found
+  example:
+    responseCode: CLIENT_ERROR
+    error: []
+    meta:
+      correlation: 835b2cef-dcd4-45f1-ad72-a4066a7f1d7e
+    message: Entity not found
+
+readUserEntity200Response:
+  type: object
+  description: >-
+    Entities fetched successfully. `result` is an array of matched entities.
+  x-internal-note: >-
+    GAP - not captured. The code (services/entities.js `read`) returns 200
+    with message ENTITY_FETCHED_SUCCESSFULLY on the happy path, but
+    scripts/api-doc/captured-responses.json has no example for this status.
+    This schema documents shape only (inferred from the entity record shape
+    seen in createUserEntity201Response) - values below are illustrative
+    placeholders, NOT a captured body. See gaps.jsonl (domain=entity,
+    endpoint=POST /user/v1/entity/read).
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: number
+          entity_type_id:
+            type: number
+          value:
+            type: string
+          label:
+            type: string
+          status:
+            type: string
+          type:
+            type: string
+          created_by:
+            type: number
+          updated_by:
+            type: number
+          created_at:
+            type: string
+          updated_at:
+            type: string
+          deleted_at:
+            type: string
+            nullable: true
+
+readUserEntity422Response:
+  type: object
+  description: >-
+    Returned when neither `id` nor the combination of `value` and
+    `entity_type_id` was supplied. At least one of `id` or (`value` and
+    `entity_type_id`) must be provided.
+  x-internal-note: >-
+    Verbatim capture, 422. Cross-field rule enforced at
+    controllers/v1/entity.js:67 and the custom validator in
+    validators/v1/entity.js `read`. The endpoint's happy-path 200
+    ENTITY_FETCHED_SUCCESSFULLY and its separate 400 ENTITY_NOT_FOUND (no
+    entities matched, services/entities.js `read`) both have no captured
+    example - see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: f190d999-1d0a-4f7f-a6c9-ca2609f3e3a1
+    message:
+      type: string
+      example: Either id OR (value and entity_type_id) must be provided
+  example:
+    responseCode: CLIENT_ERROR
+    error: []
+    meta:
+      correlation: f190d999-1d0a-4f7f-a6c9-ca2609f3e3a1
+    message: Either id OR (value and entity_type_id) must be provided
+
+deleteUserEntity202Response:
+  type: object
+  description: Entity deleted successfully.
+  x-internal-note: >-
+    Verbatim capture, 202, happy path. The code's 400 ENTITY_NOT_FOUND path
+    (services/entities.js `delete`, deleteCount === 0) has no captured
+    example - see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Entity deleted successfully
+    result:
+      type: array
+      items:
+        type: string
+      example: []
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              type:
+                type: string
+              version:
+                type: number
+        correlation:
+          type: string
+          example: 60cf8ae2-9000-44a8-844d-d91cc059dd3b
+  example:
+    responseCode: OK
+    message: Entity deleted successfully
+    result: []
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+      correlation: 60cf8ae2-9000-44a8-844d-d91cc059dd3b
+
+deleteUserEntity400Response:
+  type: object
+  description: >-
+    Not Found. Returned when the entity to delete does not exist.
+  x-internal-note: >-
+    GAP - not captured. The code (services/entities.js `delete`) returns 400
+    with message ENTITY_NOT_FOUND when deleteCount === 0, but
+    scripts/api-doc/captured-responses.json has no example for this status
+    on the delete endpoint. This schema documents shape only (inferred from
+    the same failureResponse() envelope used elsewhere in this domain,
+    e.g. updateUserEntity400Response) - values below are illustrative
+    placeholders, NOT a captured body. See gaps.jsonl (domain=entity,
+    endpoint=DELETE /user/v1/entity/delete/:id).
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    error:
+      type: array
+      items:
+        type: string
+
+entityList401Response:
+  type: object
+  description: >-
+    Unauthorized. Returned when the caller lacks the permission required to
+    access the entity list resource.
+  x-internal-note: >-
+    Verbatim capture, 401. This 401 originates from the permission / auth
+    middleware layer, not from controllers/v1/entity.js or
+    services/entities.js, so it is not one of the enumerated
+    successResponse/failureResponse call sites in this domain's own code -
+    documented here because it was actually captured against this endpoint.
+    The list endpoint's own 200 ENTITY_FETCHED_SUCCESSFULLY success path and
+    its 400 ENTITY_NOT_FOUND path (services/entities.js `list`, empty result
+    set) both have no captured example - see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      example: UNAUTHORIZED
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 9b8b4628-07f6-4a55-98fc-17c3ef0c969b
+    message:
+      type: string
+      example: You do not have the required permissions to access this resource.
+        Please contact your administrator for assistance.
+  example:
+    responseCode: UNAUTHORIZED
+    error: []
+    meta:
+      correlation: 9b8b4628-07f6-4a55-98fc-17c3ef0c969b
+    message: You do not have the required permissions to access this resource. Please
+      contact your administrator for assistance.
+
+updateUserEntity202Response:
+  type: object
+  description: Entity updated successfully.
+  x-internal-note: >-
+    No captured example exists for this status (services/entities.js
+    `update`) - schema is shape-only, see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items:
+        type: number
+
+entityList200Response:
+  type: object
+  description: User entities fetched successfully.
+  x-internal-note: >-
+    No captured example exists for this status - schema is shape-only,
+    inferred from services/entities.js `list`'s explicit attributes array
+    (['id', 'entity_type_id', 'value', 'label', 'status', 'type',
+    'created_by', 'created_at']), not from createUserEntity201Response (a
+    different endpoint's shape), see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+      properties:
+        count:
+          type: number
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              entity_type_id:
+                type: number
+              value:
+                type: string
+              label:
+                type: string
+              status:
+                type: string
+              type:
+                type: string
+              created_by:
+                type: number
+              created_at:
+                type: string

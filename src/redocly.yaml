@@ -1,0 +1,11 @@
+apis:
+  user@v1:
+    root: api-doc/openapi.yaml
+
+extends:
+  - recommended
+
+rules:
+  # This spec intentionally lists a local dev server alongside the real ones
+  # for engineers running the service via docker-compose.
+  no-server-example.com: warn

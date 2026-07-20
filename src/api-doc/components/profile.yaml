@@ -1,0 +1,247 @@
+profileDetailsResponse200:
+  type: object
+  description: User solutions response
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Profile fetched successfully.
+    result:
+      type: object
+      properties:
+        email:
+          type: string
+          example: example@mail.com
+        role:
+          type: string
+          example: mentee
+        email_verified:
+          type: boolean
+          example: true
+        has_accepted_terms_and_conditions:
+          type: boolean
+          example: false
+        id:
+          type: string
+          example: 1
+        name:
+          type: string
+          example: Ankit
+        location:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: kl
+              label:
+                type: string
+                example: Kerala
+        languages:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: english
+              label:
+                type: string
+                example: English
+        organization_id:
+          type: number
+          example: 2
+        preferred_language:
+          type: object
+          properties:
+            value:
+              type: string
+              example: english
+            label:
+              type: string
+              example: English
+        status:
+          type: string
+          example: ACTIVE
+        share_link:
+          type: string
+          example: null
+        updated_at:
+          type: string
+          example: '2022-05-18T05:24:52.431Z'
+        created_at:
+          type: string
+          example: '2022-05-18T05:24:52.431Z'
+        last_logged_in_at:
+          type: string
+          example: '2022-05-18T05:24:52.431Z'
+        about:
+          type: string
+          example: This is test about of mentee
+        gender:
+          type: object
+          properties:
+            value:
+              type: string
+              example: male
+            label:
+              type: string
+              example: Male
+        image:
+          type: string
+          example: https://cloudstorage.com/container/abc.png
+Unauthorized401Response:
+  description: UNAUTHORIZED
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: UNAUTHORIZED
+    message:
+      type: string
+      example: Access token expired
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+updateRequest:
+  type: object
+  description: User profile update request
+  properties:
+    name:
+      type: string
+      description: The user's name.
+      example: John
+    location:
+      type: array
+      items:
+        type: string
+        description: The user's location(s).
+      example:
+        - ap
+    about:
+      type: string
+      description: A brief description about the user.
+      example: Experienced Teacher
+    has_accepted_terms_and_conditions:
+      type: boolean
+      description: Indicates whether the user has accepted terms and conditions.
+      example: true
+    gender:
+      type: string
+      description: The user's gender.
+      example: male
+    image:
+      type: string
+      description: URL of the user's profile image.
+      example: https://cloudstorage.com/container/abc.png
+updateRequest200Response:
+  description: Accepted
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Profile updated successfully.
+    result:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 8
+        email:
+          type: string
+          example: example@mail.com
+        email_verified:
+          type: string
+          example: 'true'
+        name:
+          type: string
+          example: John Deo
+        status:
+          type: string
+          example: ACTIVE
+        has_accepted_terms_and_conditions:
+          type: boolean
+          example: true
+        preferred_language:
+          type: object
+          properties:
+            value:
+              type: string
+              example: english
+            label:
+              type: string
+              example: English
+        organization_id:
+          type: number
+          example: 1
+        roles:
+          type: array
+          items:
+            type: number
+          example:
+            - 2
+        created_at:
+          type: string
+          example: '2023-09-20T11:59:37.871Z'
+        updated_at:
+          type: string
+          example: '2023-09-20T11:59:37.871Z'
+        user_roles:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                example: 1
+              title:
+                type: string
+                example: mentee
+              user_type:
+                type: number
+                example: 0
+              status:
+                type: string
+                example: ACTIVE
+shareMentorProfile200Response:
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Profile share link generated successfully.
+    result:
+      type: object
+      properties:
+        share_link:
+          type: string
+          example: 52f076629b3749ebf7dcab23f22b30df
+shareMentorProfileBadRequest400Response:
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    message:
+      type: string
+      example: User doesn't exist.
+    error:
+      type: array
+      items:
+        type: string
+      example: []

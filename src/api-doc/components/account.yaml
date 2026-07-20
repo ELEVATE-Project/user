@@ -1,0 +1,1071 @@
+# Account domain components.
+# Request field required/optional flags are taken verbatim from
+# scripts/api-doc/validator-fields.json (account.operations.*).
+# Cross-field rules (anyOf) come from scripts/api-doc/cross-field-rules.json
+# findings scoped to services/account.js.
+# Response `example` blocks are copied verbatim from
+# scripts/api-doc/captured-responses.json (live server capture) — never inferred.
+
+# ---------------------------------------------------------------------------
+# Request schemas
+# ---------------------------------------------------------------------------
+
+createUserRequest:
+  type: object
+  description: >-
+    Request payload for creating a user account. At least one of `email` or
+    `phone` must be provided, and `phone_code` is required when `phone` is
+    provided. Depending on the tenant's configured authentication mode, a
+    `password` may be required or rejected.
+  x-internal-note: >-
+    Cross-field rules enforced in services/account.js: anyOf(email, phone);
+    phone_code required with phone; password/otp gated at runtime by
+    configuration.allowed_auth_mode (PASSWORD_REQUIRED / AUTH_MODE_NOT_ALLOWED).
+  properties:
+    name:
+      type: string
+      description: Name of the user. Alphabets and spaces only.
+      example: Nevil Mathew
+    email:
+      type: string
+      format: email
+      description: User email. Required if `phone` is not provided.
+      example: mentee@tunerlabs.com
+    username:
+      type: string
+      description: Username (3-40 chars, lowercase letters/numbers/_/- or an email).
+      example: mentee_3t7m88mvl5
+    phone:
+      type: string
+      description: Phone number (7-15 digits). Required if `email` is not provided.
+      example: '9876543210'
+    phone_code:
+      type: string
+      description: Country calling code (2-4 chars). Required when `phone` is provided.
+      example: '+91'
+    password:
+      type: string
+      description: User password. Must satisfy the configured password policy; may be required depending on tenant allowed_auth_mode.
+      example: Password@123
+    otp:
+      type: string
+      description: 6-digit OTP. Required only when ENABLE_EMAIL_OTP_VERIFICATION is enabled for the tenant.
+      example: '123456'
+    role:
+      type: string
+      description: >-
+        Role for the user. Conditionally validated: only checked when present,
+        and must not be the admin role.
+      example: mentee
+    registration_code:
+      type: string
+      description: Optional organization registration code used to attach the user to an org.
+      example: org-signup-code
+  anyOf:
+    - required:
+        - email
+    - required:
+        - phone
+
+loginRequest:
+  type: object
+  description: >-
+    Request payload for user login. `identifier` is required; `phone_code` is
+    required/validated only when the identifier is a phone number, and at
+    least one of `password` or `otp` must be provided. Which credential type
+    is actually accepted also depends on the tenant's configured
+    authentication mode.
+  x-internal-note: >-
+    password/otp requirement enforced in services/account.js login (line
+    761: if (!hasOtp && !hasPassword) return AUTH_CREDENTIAL_REQUIRED).
+    Auth-mode gating (AUTH_MODES.PASSWORD / AUTH_MODES.OTP) returns
+    AUTH_MODE_NOT_ALLOWED when a disallowed credential type is supplied;
+    intentionally not modelled in the schema since it depends on runtime
+    tenant configuration, not the request body alone. phone_code is likewise
+    conditionally required (only for phone identifiers) so it's kept out of
+    the structural `required` array, consistent with that same runtime-gating
+    pattern.
+  required:
+    - identifier
+  properties:
+    identifier:
+      type: string
+      description: Email, phone number, or username of the user.
+      example: mentee@tunerlabs.com
+    phone_code:
+      type: string
+      description: Country calling code (e.g. +91). Required/validated only for phone identifiers.
+      example: '+91'
+    password:
+      type: string
+      description: User password. Provide this OR `otp`.
+      example: Password@123
+    otp:
+      type: string
+      description: 6-digit login OTP. Provide this OR `password`.
+      example: '123456'
+  anyOf:
+    - required:
+        - password
+    - required:
+        - otp
+
+logoutRequest:
+  type: object
+  description: Request payload for logging out. Requires a valid refresh_token.
+  required:
+    - refresh_token
+  properties:
+    refresh_token:
+      type: string
+      description: The refresh token issued at login.
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+generateTokenRequest:
+  type: object
+  description: Request payload for generating a new access token from a refresh token.
+  required:
+    - refresh_token
+  properties:
+    refresh_token:
+      type: string
+      description: The refresh token issued at login.
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+generateOtpRequest:
+  type: object
+  description: Request payload for generating an OTP (used for password reset flows). Both fields required.
+  required:
+    - identifier
+    - password
+  properties:
+    identifier:
+      type: string
+      description: Email, phone, or username of the account.
+      example: mentee@tunerlabs.com
+    password:
+      type: string
+      description: User password.
+      example: Password@123
+
+registrationOtpRequest:
+  type: object
+  description: >-
+    Request payload for the registration OTP. `registration_code` is
+    required, and at least one of `email`, `phone`, or `username` must be
+    provided. If `phone` is provided, `phone_code` is also required.
+  x-internal-note: >-
+    Cross-field rule enforced in services/account.js registrationOtp (line
+    1291); validator message: "At least one of email, phone, or username
+    must be provided".
+  required:
+    - registration_code
+  properties:
+    email:
+      type: string
+      format: email
+      description: User email.
+      example: mentee@tunerlabs.com
+    phone:
+      type: string
+      description: Phone number (7-15 digits).
+      example: '9876543210'
+    username:
+      type: string
+      description: Username (3-30 chars).
+      example: mentee_new
+    phone_code:
+      type: string
+      description: Country calling code (e.g. +91). Required when `phone` is provided.
+      example: '+91'
+    name:
+      type: string
+      description: Name of the user.
+      example: Nevil Mathew
+    registration_code:
+      type: string
+      description: Organization registration code.
+      example: org-signup-code
+  anyOf:
+    - required:
+        - email
+    - required:
+        - phone
+    - required:
+        - username
+
+resetPasswordRequest:
+  type: object
+  description: Request payload for resetting a password. All three fields are required.
+  required:
+    - identifier
+    - password
+    - otp
+  properties:
+    identifier:
+      type: string
+      description: Email, phone, or username of the account.
+      example: mentee@tunerlabs.com
+    password:
+      type: string
+      description: New password. Must satisfy the configured password policy.
+      example: NewPassword@123
+    otp:
+      type: string
+      description: 6-digit OTP received for the reset.
+      example: '123456'
+
+deleteRequest:
+  type: object
+  description: Request payload for self-deleting the authenticated account. Password confirmation required.
+  required:
+    - password
+  properties:
+    password:
+      type: string
+      description: The account password, for confirmation.
+      example: Password@123
+
+changeRoleRequest:
+  type: object
+  description: Request payload to change a user's role. Both fields required.
+  required:
+    - email
+    - role
+  properties:
+    email:
+      type: string
+      format: email
+      description: Email of the user whose role should change.
+      example: mentee@tunerlabs.com
+    role:
+      type: string
+      description: The new role.
+      example: mentor
+
+changePasswordRequest:
+  type: object
+  description: Request payload to change the authenticated user's password. Both fields required.
+  required:
+    - oldPassword
+    - newPassword
+  properties:
+    oldPassword:
+      type: string
+      description: Current password.
+      example: Password@123
+    newPassword:
+      type: string
+      description: New password. Must satisfy the configured password policy and differ from the old one.
+      example: NewPassword@123
+
+validatingEmailIdsRequest:
+  type: object
+  description: Request payload to validate a list of email IDs. `emailIds` must be a non-empty array of valid email strings.
+  required:
+    - emailIds
+  properties:
+    emailIds:
+      type: array
+      description: Non-empty array of email addresses.
+      items:
+        type: string
+        format: email
+      example:
+        - user1@example.com
+        - user2@example.com
+
+searchRequest:
+  type: object
+  description: >-
+    Request body for the search endpoint. `user_ids` and `excluded_user_ids`
+    (both integer arrays) are required in the body, while `tenant_code`,
+    `type`, and `organization_id` are required query parameters (see the
+    path definition).
+  x-internal-note: Required fields verified against validator-fields.json.
+  required:
+    - user_ids
+    - excluded_user_ids
+  properties:
+    user_ids:
+      type: array
+      description: User IDs to include in the search.
+      items:
+        type: integer
+      example: [22, 23]
+    excluded_user_ids:
+      type: array
+      description: User IDs to exclude from the search.
+      items:
+        type: integer
+      example: [24]
+
+validateUserSessionRequest:
+  type: object
+  description: Request payload to validate a user session. `token` carried in the body.
+  properties:
+    token:
+      type: string
+      description: The session token to validate.
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# ---------------------------------------------------------------------------
+# Generic error response shapes (bodies supplied as named examples in paths)
+# ---------------------------------------------------------------------------
+
+clientErrorResponse:
+  type: object
+  description: Client error (responseCode CLIENT_ERROR). Concrete message varies by case.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+
+validationErrorResponse:
+  type: object
+  description: express-validator validation failure (HTTP 422).
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+          param:
+            type: string
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+
+unauthorizedResponse:
+  type: object
+  description: Unauthorized (missing/invalid token). responseCode UNAUTHORIZED.
+  properties:
+    responseCode:
+      type: string
+      example: UNAUTHORIZED
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+      example: Unauthorized request
+
+serverErrorResponse:
+  type: object
+  description: Server error. responseCode SERVER_ERROR.
+  properties:
+    responseCode:
+      type: string
+      example: SERVER_ERROR
+    message:
+      type: string
+      example: Oops! Something Went Wrong.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+
+# ---------------------------------------------------------------------------
+# Success / captured response schemas (example blocks are verbatim captures)
+# ---------------------------------------------------------------------------
+
+createUser201Response:
+  type: object
+  description: User account created successfully. Returned when sign-up completes and the user is automatically logged in.
+  x-internal-note: Captured from a live POST /user/v1/account/create response.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: Sign-up successful, Please wait while logging in.
+    result:
+      access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.<snip-verbatim-jwt>
+      refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.<snip-verbatim-jwt>
+      user:
+        id: 22
+        email: mentee_3t7m88mkgp@tunerlabs.com
+        email_verified: 'false'
+        name: Nevil Mathew
+        username: mentee_3t7m88mvl5
+        phone: null
+        location: null
+        about: null
+        share_link: null
+        status: ACTIVE
+        image: null
+        has_accepted_terms_and_conditions: false
+        languages: null
+        preferred_language:
+          value: en
+          label: English
+        tenant_code: default
+        meta: null
+        created_at: '2026-07-15T10:56:20.430Z'
+        updated_at: '2026-07-15T10:56:20.430Z'
+        deleted_at: null
+        organizations:
+          - id: 1
+            name: Default Organization
+            code: default_code
+            description: Updated via replay script
+            status: ACTIVE
+            related_orgs:
+              - 999999999
+            tenant_code: default
+            meta: null
+            created_by: null
+            updated_by: 19
+            roles:
+              - id: 8
+                title: org_admin
+                label: null
+                user_type: 1
+                status: ACTIVE
+                organization_id: 1
+                visibility: PUBLIC
+                tenant_code: default
+                translations: null
+              - id: 6
+                title: mentee
+                label: null
+                user_type: 0
+                status: ACTIVE
+                organization_id: 1
+                visibility: PUBLIC
+                tenant_code: default
+                translations: null
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: 3d8ff223-9a93-4b4c-81a1-3f39c3d48ff0
+
+login200Response:
+  type: object
+  description: User successfully logged in. Returns session tokens and the user profile.
+  x-internal-note: Captured from a live POST /user/v1/account/login response.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: User logged in successfully.
+    result:
+      access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.<snip-verbatim-jwt>
+      refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.<snip-verbatim-jwt>
+      user:
+        id: 22
+        email: 652ad9bf40fd73f960ae4fbf5178c826045a570b3c5e0757e9040156203f9f39
+        email_verified: 'false'
+        name: Nevil Mathew
+        username: mentee_3t7m88mvl5
+        phone: null
+        phone_code: null
+        location: null
+        about: null
+        share_link: null
+        status: ACTIVE
+        image: null
+        has_accepted_terms_and_conditions: false
+        languages: null
+        preferred_language:
+          value: en
+          label: English
+        tenant_code: default
+        meta: null
+        created_at: '2026-07-15T10:56:20.430Z'
+        updated_at: '2026-07-15T10:56:20.430Z'
+        deleted_at: null
+        organizations:
+          - id: 1
+            name: Default Organization
+            code: default_code
+            description: Updated via replay script
+            status: ACTIVE
+            related_orgs:
+              - 999999999
+            tenant_code: default
+            meta: null
+            created_by: null
+            updated_by: 19
+            roles:
+              - id: 8
+                title: org_admin
+                label: null
+                user_type: 1
+                status: ACTIVE
+                organization_id: 1
+                visibility: PUBLIC
+                tenant_code: default
+                translations: null
+              - id: 6
+                title: mentee
+                label: null
+                user_type: 0
+                status: ACTIVE
+                organization_id: 1
+                visibility: PUBLIC
+                tenant_code: default
+                translations: null
+        identifier: mentee_3t7m88mkgp@tunerlabs.com
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: 66152627-619e-4263-b6b7-d63ff3458af6
+
+generateToken200Response:
+  type: object
+  description: A new access token was generated successfully from a valid refresh token.
+  x-internal-note: Response body captured from a live request.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Access token generated successfully
+    result:
+      type: object
+      properties:
+        access_token:
+          type: string
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: Access token generated successfully
+    result:
+      access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.<snip-verbatim-jwt>
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: 252b9df0-4483-4b41-8e7c-e3e7e7ccd333
+
+generateOtp200Response:
+  type: object
+  description: An OTP was generated and sent to the user's registered email or phone number.
+  x-internal-note: Response body captured from a live request.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+    result:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: >-
+      OTP has been sent to your registered email or phone number. Please enter
+      the OTP to update your password.
+    result: []
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: f54e330f-30b7-490b-8069-bd2f68f61c76
+
+changePassword200Response:
+  type: object
+  description: The authenticated user's password was changed successfully.
+  x-internal-note: Response body captured from a live request.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: Your password has been changed successfully. Please log-in to continue.
+    result: {}
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: f1ccb4bb-a4fb-4487-9c1f-8252a93a4141
+
+acceptTermsAndCondition200Response:
+  type: object
+  description: The terms and conditions were accepted and the user's profile was updated successfully.
+  x-internal-note: Response body captured from a live request.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+    result:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: User successfully updated.
+    result: []
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: 4785f7d3-7b61-437e-a84f-75aca1f246c8
+
+sessions201Response:
+  type: object
+  description: The authenticated user's sessions were fetched successfully.
+  x-internal-note: >-
+    Response body captured from a live request. This endpoint is served by
+    services/user-sessions.js, which is out of the account module's scope
+    and was not independently reviewed; the schema is derived solely from
+    the captured response body.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: User sessions fetched successfully
+    result:
+      data:
+        - id: 65
+          device_info: {}
+          status: ACTIVE
+          login_time: '1784112981'
+          logout_time: null
+      count: 1
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: a7fc4a8b-a7a0-48fe-b696-2fafb0959e5b
+
+validateUserSession200Response:
+  type: object
+  description: The user session was validated successfully.
+  x-internal-note: >-
+    Response body captured from a live request. Served by
+    services/user-sessions.js (out of account scope, not reviewed); schema
+    derived solely from the captured body.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: User session validated successfully
+    result:
+      data:
+        user_session_active: true
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: ecd8a007-9bed-47b3-a08d-667622567d15
+
+list200Response:
+  type: object
+  description: The list of users was fetched successfully.
+  x-internal-note: >-
+    Response body captured from a live request; the captured example is
+    empty because the calling user was not an admin.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+    result:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+        count:
+          type: integer
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: User list fetched successfully.
+    result:
+      data: []
+      count: 0
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: f6b22425-1cee-4ab9-8fc5-f3b99f0cc319
+
+search200Response:
+  type: object
+  description: The user search results were fetched successfully.
+  x-internal-note: Response body captured from a live request.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: User list fetched successfully.
+    result:
+      data:
+        - id: 22
+          email: mentee_3t7m88mkgp@tunerlabs.com
+          email_verified: 'false'
+          name: Nevil Mathew
+          username: mentee_3t7m88mvl5
+          phone: null
+          phone_code: null
+          location: null
+          about: null
+          share_link: null
+          status: ACTIVE
+          image: null
+          has_accepted_terms_and_conditions: true
+          languages: null
+          preferred_language: en
+          configs: null
+          tenant_code: default
+          roles:
+            - 8
+            - 6
+          custom_entity_text: null
+          meta: null
+          created_at: '2026-07-15T10:56:20.430Z'
+          updated_at: '2026-07-15T10:56:21.449Z'
+          deleted_at: null
+          user_organizations:
+            - user_id: 22
+              organization_code: default_code
+              tenant_code: default
+              created_at: '2026-07-15T10:56:20.439Z'
+              updated_at: '2026-07-15T10:56:20.440Z'
+              deleted_at: null
+              organization:
+                id: 1
+                name: Default Organization
+                code: default_code
+              roles:
+                - role_id: 8
+                  role:
+                    id: 8
+                    title: org_admin
+                    label: null
+                - role_id: 6
+                  role:
+                    id: 6
+                    title: mentee
+                    label: null
+      count: 1
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: 7902ae69-3b55-47c5-b493-ef10e61d0139
+
+logout200Response:
+  type: object
+  description: The user was logged out successfully.
+  x-internal-note: Response body captured from a live request.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+    result:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: User logged out successfully.
+    result: []
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+        - id: 6
+          type: formhvedht
+          version: 0
+        - id: 7
+          type: formsrggjf
+          version: 0
+        - id: 8
+          type: formcsfgof
+          version: 0
+        - id: 9
+          type: formhvedht
+          version: 0
+      correlation: 7627d9e4-df47-4c78-bb6a-c288b6d0ef9b
+
+delete200Response:
+  type: object
+  description: The authenticated user's account was deleted successfully.
+  x-internal-note: Response body captured from a live request.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+    result:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: User deleted successfully
+    result: []
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+        - id: 6
+          type: formhvedht
+          version: 0
+        - id: 7
+          type: formsrggjf
+          version: 0
+        - id: 8
+          type: formcsfgof
+          version: 0
+        - id: 9
+          type: formhvedht
+          version: 0
+      correlation: 0c3893e3-cf7d-417e-a393-feda3c38140f

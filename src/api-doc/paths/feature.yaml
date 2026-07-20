@@ -1,0 +1,513 @@
+create:
+  post:
+    summary: Create Feature
+    operationId: createFeature
+    tags:
+      - Feature APIs
+    description: >-
+      Use this API to create a new feature.
+
+      - Endpoint: `/user/v1/feature/update` (POST, no `id` path param). The
+        controller's single `update` method branches into create logic when
+        no `id` path param is supplied — see controllers/v1/feature.js#update.
+
+      - `label`, `code` and `display_order` are mandatory and cannot be empty
+        or null on create (see conditionalNotes in validator-fields.json:
+        `code` and `display_order` are only required inside the
+        `if (!isUpdate)` branch of validators/v1/feature.js#update).
+
+      - `label` must be non-empty and may only contain letters (regex
+        `^[A-Za-z]*$` combined with a `notEmpty()` check).
+
+      - `display_order` must be a non-empty string of digits on create.
+
+      - The request body is passed through `filterRequestBody` with the
+        `feature.create` blacklist (constants/blacklistConfig.js), which
+        strips any client-supplied `created_by`, `updated_by`, `created_at`,
+        `updated_at` and `deleted_at` — these are always server-set and
+        cannot be provided by the caller.
+
+      - The X-auth-token is mandatory and cannot be empty or null.
+      '
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the logged-in user.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/feature.yaml#/featureCreateRequest
+          examples:
+            createFeature:
+              summary: Create a new feature
+              value:
+                label: ReplayFeature
+                code: feat3t7os9otwv
+                display_order: '1'
+    responses:
+      '201':
+        description: Created. Feature created successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/feature.yaml#/featureCreate201Response
+            examples:
+              happyPath:
+                summary: Feature created
+                value:
+                  responseCode: OK
+                  message: Feature created successfully
+                  result:
+                    code: feat3t7os9otwv
+                    label: ReplayFeature
+                    display_order: 1
+                    created_by: 23
+                    updated_at: '2026-07-15T10:56:25.820Z'
+                    created_at: '2026-07-15T10:56:25.820Z'
+                    icon: null
+                    description: null
+                    meta: null
+                    updated_by: null
+                    deleted_at: null
+                  meta:
+                    correlation: d8daf050-1722-4db2-afa3-1d7e0d067f6a
+      '400':
+        description: >-
+          Bad Request. Feature with the same `code` already exists
+          (UniqueConstraintError). No live captured example exists for
+          this case; schema is types-only.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/feature.yaml#/featureAlreadyExists400Response
+      '422':
+        description: Unprocessable Entity. Request body failed validation.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/feature.yaml#/featureValidation422Response
+            examples:
+              missingRequiredFields:
+                summary: Missing/invalid code, label and display_order
+                value:
+                  responseCode: CLIENT_ERROR
+                  error:
+                    - location: body
+                      param: label
+                      msg: Invalid value
+                      value: No Code
+                    - location: body
+                      param: code
+                      msg: code field is empty
+                    - location: body
+                      param: display_order
+                      msg: display_order must not be empty
+                    - location: body
+                      param: display_order
+                      msg: display_order must contain only digits
+                  meta:
+                    correlation: f04b0f11-1f8c-4a94-9255-284a57a2d1be
+                  message: Validation failed, Entered data is incorrect!
+      '401':
+        description: Unauthorized. X-auth-token is either missing or invalid.
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape only, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                  example: UNAUTHORIZED
+                message:
+                  type: string
+                error:
+                  type: array
+                  items:
+                    type: object
+                meta:
+                  type: object
+
+update:
+  '{id}':
+    post:
+      summary: Update Feature
+      operationId: updateFeature
+      tags:
+        - Feature APIs
+      description: >-
+        Use this API to update an existing feature.
+
+        - Endpoint: `/user/v1/feature/update/{id}` (POST). Despite the
+          generic router param name `id`, the value is matched against the
+          feature's `code` column (services/feature.js#update calls
+          `featureQueries.findByCode`/updates `{ code: code }`) — captured
+          traffic keys this endpoint as `POST /user/v1/feature/update/:code`.
+          Pass the feature's `code` value here, not a numeric id.
+
+        - Only `label` is mandatory on update; `code` and `display_order` are
+          NOT required on this branch (validator-fields.json's required:true
+          for those fields applies only to the create branch).
+
+        - The request body is passed through `filterRequestBody` with the
+          `feature.update` blacklist (constants/blacklistConfig.js), which
+          strips `code`, `created_by`, `updated_by`, `created_at`,
+          `updated_at` and `deleted_at` from the body before it reaches the
+          service layer. This means `code` cannot be changed via update —
+          any `code` sent in the body is silently dropped, not merely
+          optional.
+
+        - The X-auth-token is mandatory and cannot be empty or null.
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the logged-in user.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: >-
+            The feature's `code` (string identifier), e.g. `programs`. Not a
+            numeric id despite the generic router parameter name.
+          schema:
+            type: string
+          example: feat3t7os9otwv
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/feature.yaml#/featureUpdateRequest
+            examples:
+              updateFeature:
+                summary: Update a feature's label
+                value:
+                  label: ReplayFeatureRenamed
+      responses:
+        '200':
+          description: >-
+            OK. Feature updated successfully. No live captured example
+            exists for this case; schema is types-only.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/feature.yaml#/featureUpdate200Response
+        '400':
+          description: Bad Request. Feature not found for the given code.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/feature.yaml#/featureNotFoundResponse
+              examples:
+                notFound:
+                  summary: Feature code does not exist
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    meta:
+                      correlation: 9638b2be-11a4-49fe-a3e5-f81bbb6954ce
+                    message: Feature not found
+        '422':
+          description: >-
+            Unprocessable Entity. Request body failed validation (e.g.
+            missing/invalid `label`). No live captured example exists
+            specifically for the update branch; schema is types-only.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/feature.yaml#/featureValidation422Response
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          x-internal-note: >-
+            No captured example exists for this status on this endpoint -
+            shape only, not a fabricated body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: UNAUTHORIZED
+                  message:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: object
+                  meta:
+                    type: object
+
+list:
+  get:
+    summary: List Features
+    operationId: listFeature
+    tags:
+      - Feature APIs
+    description: >-
+      Use this API to fetch a paginated list of features.
+
+      - Endpoint: `/user/v1/feature/list`.
+
+      - Pagination is applied by the shared `pagination` middleware
+        (middlewares/pagination.js), not by a feature-specific validator:
+        `page` defaults to `1`, `limit` defaults to `100` (max `100`), and
+        `search` defaults to `""` and is matched against the feature `code`
+        column with a case-insensitive `LIKE %search%`.
+
+      - Results are ordered by `display_order` ascending. Each row''s `icon`
+        (if present) is resolved to a downloadable URL.
+
+      - The X-auth-token is mandatory and cannot be empty or null.
+      '
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the logged-in user.
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: Page number. Defaults to 1.
+        schema:
+          type: integer
+        example: 1
+      - name: limit
+        in: query
+        required: false
+        description: Page size. Defaults to 100, capped at 100.
+        schema:
+          type: integer
+        example: 100
+      - name: search
+        in: query
+        required: false
+        description: Case-insensitive substring filter matched against the feature `code`.
+        schema:
+          type: string
+    responses:
+      '200':
+        description: OK. Features fetched successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/feature.yaml#/featureList200Response
+            examples:
+              happyPath:
+                summary: Non-empty feature list
+                value:
+                  responseCode: OK
+                  message: Feature fetched successfully.
+                  result:
+                    data:
+                      - code: programs
+                        label: Programs
+                        description: program capability
+                        icon: null
+                        meta: null
+                        display_order: 1
+                      - code: feat3t7os9otwv
+                        label: ReplayFeature
+                        description: null
+                        icon: null
+                        meta: null
+                        display_order: 1
+                      - code: project
+                        label: Project
+                        description: Project capability
+                        icon: null
+                        meta: null
+                        display_order: 2
+                    count: 10
+                  meta:
+                    correlation: f95a1b56-dd1d-42e6-8ebf-6a7141ca0ecd
+              emptyResult:
+                summary: No features match (empty-list branch).
+                x-internal-note: >-
+                  This branch was never captured live; shape inferred
+                  directly from services/feature.js#list's early-return
+                  (data: [], count: 0).
+                value:
+                  responseCode: OK
+                  message: Feature fetched successfully.
+                  result:
+                    data: []
+                    count: 0
+                  meta: {}
+      '400':
+        description: >-
+          Bad Request. `search` contains characters rejected by the shared
+          pagination middleware.
+        x-internal-note: >-
+          middlewares/pagination.js rejects a search string matching
+          /[`!#$%^&*()_+\-=\[\]{};':"\\|<>\/?~]/ with statusCode 400. No
+          captured example exists for this status on this endpoint -
+          shape-only.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                  example: CLIENT_ERROR
+                message:
+                  type: string
+                error:
+                  type: array
+                  items:
+                    type: object
+                meta:
+                  type: object
+      '401':
+        description: Unauthorized. X-auth-token is either missing or invalid.
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape only, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                  example: UNAUTHORIZED
+                message:
+                  type: string
+                error:
+                  type: array
+                  items:
+                    type: object
+                meta:
+                  type: object
+
+delete:
+  '{id}':
+    delete:
+      summary: Delete Feature
+      operationId: deleteFeature
+      tags:
+        - Feature APIs
+      description: >-
+        Use this API to delete a feature.
+
+        - Endpoint: `/user/v1/feature/delete/{id}` (DELETE). As with update,
+          the `id` path param value is matched against the feature's `code`
+          column (services/feature.js#delete calls `findByCode`/
+          `deleteByCode`) — captured traffic keys this endpoint as
+          `DELETE /user/v1/feature/delete/:code`.
+
+        - The X-auth-token is mandatory and cannot be empty or null.
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the logged-in user.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: >-
+            The feature's `code` (string identifier). Not a numeric id
+            despite the generic router parameter name.
+          schema:
+            type: string
+          example: feat3t7os9otwv
+      responses:
+        '200':
+          description: OK. Feature deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/feature.yaml#/featureDelete200Response
+              examples:
+                happyPath:
+                  summary: Feature deleted
+                  value:
+                    responseCode: OK
+                    message: FEATURE_DELETED_SUCCESSFULLY
+                    result: []
+                    meta:
+                      correlation: e2087271-cb63-482c-a69d-8aab895061c6
+        '404':
+          description: Not Found. Feature not found for the given code.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/feature.yaml#/featureNotFoundResponse
+              examples:
+                notFound:
+                  summary: Feature code does not exist
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    meta:
+                      correlation: d309a7d9-2395-4072-ab50-8846e929213e
+                    message: Feature not found
+        '422':
+          description: Unprocessable Entity. `id` path parameter is missing.
+          x-internal-note: >-
+            validators/v1/feature.js delete(): req.checkParams('id').notEmpty().
+            No captured example exists for this status - shape-only.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: CLIENT_ERROR
+                  error:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                          example: params
+                        param:
+                          type: string
+                          example: id
+                        msg:
+                          type: string
+                          example: id param is empty
+                  meta:
+                    type: object
+                  message:
+                    type: string
+                    example: Validation failed, Entered data is incorrect!
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          x-internal-note: >-
+            No captured example exists for this status on this endpoint -
+            shape only, not a fabricated body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: UNAUTHORIZED
+                  message:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: object
+                  meta:
+                    type: object
