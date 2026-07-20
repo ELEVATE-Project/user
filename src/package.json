@@ -22,7 +22,7 @@
 		"docs:lint": "redocly lint api-doc/openapi.yaml",
 		"docs:route-inventory": "node scripts/api-doc/route-inventory.js",
 		"docs:check-route-coverage": "node scripts/api-doc/check-route-coverage.js",
-		"docs:build-html": "redocly build-docs api-doc/api-doc.yaml -o api-doc/redoc-static",
+		"docs:build-html": "redocly build-docs api-doc/api-doc.yaml -o api-doc/index.html",
 		"docs:build": "npm run docs:lint && npm run docs:bundle && npm run docs:check-route-coverage && npm run docs:build-html",
 		"db:migrate": "sequelize-cli db:migrate"
 	},
