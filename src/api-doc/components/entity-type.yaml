@@ -65,12 +65,17 @@ updateEntityTypeRequest:
         non-empty array, and each item must be one of the currently
         supported model names.
       x-internal-note: >-
-        Allow-list enforced by validators/v1/entity-type.js (update) via
-        `isIn(['User'])`. CORRECTION: an earlier pass on this file claimed
-        this validator chain was broken (`isIn` called as a bare, unchained
-        identifier) - re-checked against the current source and the chain
-        is intact (`req.checkBody('model_names.*').isIn(['User'])...`), so
-        this is a normal validation rule, not a runtime bug.
+        validators/v1/entity-type.js (update): `req.checkBody('model_names.*')`
+        and `isIn(['User']).withMessage(...)` are written on separate lines
+        with no `.` connecting them - `isIn` is called as a bare, unchained
+        identifier, not a method on the checkBody() chain, so this throws a
+        ReferenceError (`isIn is not defined`) at runtime rather than
+        enforcing the allow-list. Confirmed by direct read; see
+        TODO-reverted-bugfixes.md Part 2, bullet 1. (A prior "CORRECTION"
+        note here claimed this chain was intact - it was itself wrong; it
+        misquoted the source with a `.` that isn't actually there. The
+        create() operation's equivalent check, a few lines up in the same
+        file, IS correctly chained and unaffected.)
       items:
         type: string
       example:
@@ -199,6 +204,86 @@ createEntityType201Response:
           type: formsrggjf
           version: 0
       correlation: a6540689-f5db-445c-bc80-5d4149d9011d
+updateEntityType422Response:
+  type: object
+  description: Validation failed - request body did not pass express-validator checks.
+  x-internal-note: >-
+    No live captured example exists for this case; shape follows the same
+    pattern as createEntityType422Response, restricted to update's own
+    required fields (data_type, model_names).
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+          param:
+            type: string
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: body
+        param: data_type
+        msg: data_type field is empty
+      - location: body
+        param: model_names
+        msg: model_names must be an array with at least one element
+    meta:
+      correlation: 1a2b3c4d-5e6f-4a7b-8c9d-1a2b3c4d5e6f
+    message: Validation failed, Entered data is incorrect!
+
+deleteEntityType422Response:
+  type: object
+  description: Validation failed - the `id` path parameter is missing/invalid.
+  x-internal-note: No live captured example exists for this case - shape-only.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+            example: params
+          param:
+            type: string
+            example: id
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: params
+        param: id
+        msg: id param is empty
+    meta:
+      correlation: 2b3c4d5e-6f7a-4b8c-9d1a-2b3c4d5e6f7a
+    message: Validation failed, Entered data is incorrect!
+
 createEntityType422Response:
   type: object
   description: Validation failed - request body did not pass express-validator checks.

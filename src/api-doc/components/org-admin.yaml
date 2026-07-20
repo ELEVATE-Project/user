@@ -418,30 +418,26 @@ updateRequestStatus400FailedResponse:
       type: object
   required:
     - message
-updateRequestStatus400NotFoundResponse:
+updateRequestStatus500Response:
   type: object
   description: >-
-    Real captured example. CORRECTION (post-hoc review): an earlier pass on
-    this file claimed request_id not matching any request causes an uncaught
-    TypeError (requestDetail.status on null) surfacing as a generic 500, with
-    a fabricated 500 example body invented to support that claim. Re-checked
-    against current services/org-admin.js: there IS a proper
-    `if (!requestDetail)` guard that returns responses.failureResponse({
-    message: 'REQUEST_NOT_FOUND', statusCode: 400 }) before requestDetail.status
-    is ever read. The real captured example below (message "Role Change
-    Request not found.") is this 400 REQUEST_NOT_FOUND branch, not a 500.
+    Returned when `request_id` doesn't match any request. This is the real,
+    current behavior instead of a clean 400 — a missing null check causes an
+    uncaught error.
+  x-internal-note: >-
+    services/org-admin.js updateRequestStatus() has no `if (!requestDetail)`
+    guard before reading `requestDetail.status`, so a non-matching
+    request_id throws instead of returning a clean failureResponse. Real
+    captured example (captured-responses.json, key "POST
+    /user/v1/org-admin/updateRequestStatus", case "not-found request_id ->
+    404"). See TODO-reverted-bugfixes.md.
   properties:
     responseCode:
       type: string
-      example: CLIENT_ERROR
-    error:
-      type: array
-      items: {}
+      example: SERVER_ERROR
     message:
       type: string
-      enum:
-        - Role Change Request not found.
-      example: Role Change Request not found.
+      example: Oops! Something Went Wrong.
     meta:
       type: object
       properties:
@@ -456,7 +452,7 @@ updateRequestStatus400NotFoundResponse:
 # NOT the /admin/deactivateUser/{id} single-user variant from another
 # domain -- see paths file note.)
 # ---------------------------------------------------------------------------
-deactivateUserRequest:
+orgAdminDeactivateUserRequest:
   type: object
   description: >-
     Deactivate one or more users in the org admin's organization. Provide at
@@ -481,7 +477,7 @@ deactivateUserRequest:
         - ids
     - required:
         - emails
-deactivateUser200Response:
+orgAdminDeactivateUser200Response:
   type: object
   description: Returned when the specified users are deactivated successfully.
   x-internal-note: >-
@@ -505,7 +501,7 @@ deactivateUser200Response:
             type: integer
     meta:
       type: object
-deactivateUser400Response:
+orgAdminDeactivateUser400Response:
   type: object
   description: >-
     Returned when none of the given ids or emails match existing users, so
@@ -523,7 +519,7 @@ deactivateUser400Response:
       type: string
     meta:
       type: object
-deactivateUser422Response:
+orgAdminDeactivateUser422Response:
   type: object
   description: >-
     Returned when neither an `ids` nor an `emails` array is provided in the

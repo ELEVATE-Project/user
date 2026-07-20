@@ -109,7 +109,7 @@ updateById:
         schema:
           type: string
           pattern: ^[a-zA-Z0-9_]+$
-        example: dummy
+        example: tenant3t7o723zj5
     requestBody:
       required: true
       content:
@@ -261,7 +261,7 @@ removeDomain:
         schema:
           type: string
           pattern: ^[a-zA-Z0-9_]+$
-        example: dummy
+        example: tenant3t7o723zj5
     requestBody:
       required: true
       content:

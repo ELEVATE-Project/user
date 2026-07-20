@@ -54,7 +54,8 @@ featureCreateRequest:
       type: string
       description: Unique feature code.
     display_order:
-      type: integer
+      type: string
+      pattern: '^\d+$'
       description: >-
         Sort order used when listing features. Must be provided as a
         non-empty string of digits when creating a feature.
@@ -85,8 +86,12 @@ featureUpdateRequest:
       description: Human-readable feature label. Must contain only letters.
       x-internal-note: Validated via regex ^[A-Za-z]*$ combined with notEmpty().
     display_order:
-      type: integer
-      description: Optional. Sort order used when listing features.
+      type: string
+      pattern: '^\d+$'
+      description: >-
+        Optional. Sort order used when listing features. Must be a
+        non-empty string of digits.
+      x-internal-note: Validated with matches(/^\d+$/).
     icon:
       type: string
       nullable: true

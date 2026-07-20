@@ -40,18 +40,49 @@ template:
           application/json:
             schema:
               $ref: ../components/notification.yaml#/notAdmin400Response
-      '409':
-        description: Conflict (a template with the same code already exists).
-        content:
-          application/json:
-            schema:
-              $ref: ../components/notification.yaml#/alreadyExists409Response
       '500':
-        description: Server Error.
+        description: >-
+          Internal Server Error. Also covers a real bug: attempting to
+          create a template with a `code` that already exists for the
+          org/tenant should return a clean 409
+          (NOTIFICATION_TEMPLATE_ALREADY_EXISTS) but instead surfaces here as
+          a 500, because services/notification.js sets `statusCode:
+          httpStatusCode.conflict`, which is `undefined` (no `conflict` key
+          exists in generics/http-status.js) — see the
+          gap_template_already_exists example below. The response body in
+          that case still carries the original
+          CLIENT_ERROR/NOTIFICATION_TEMPLATE_ALREADY_EXISTS content, not the
+          generic server-error shape.
+        x-internal-note: >-
+          services/notification.js create() sets `statusCode:
+          httpStatusCode.conflict` on the NOTIFICATION_TEMPLATE_ALREADY_EXISTS
+          failure path, but generics/http-status.js has no `conflict` key at
+          all - it's `undefined`. responses.failureResponse's `statusCode =
+          500` default parameter then kicks in for that explicit `undefined`,
+          while message/responseCode pass through unchanged, so the
+          documented 409 never actually happens; real clients get HTTP 500
+          with a CLIENT_ERROR/NOTIFICATION_TEMPLATE_ALREADY_EXISTS body. Same
+          root cause as the identical bug in services/user-role.js — see
+          TODO-reverted-bugfixes.md.
         content:
           application/json:
             schema:
               $ref: ../components/notification.yaml#/serverError500Response
+            examples:
+              genericServerError:
+                summary: Unhandled server error (generic).
+                value:
+                  responseCode: SERVER_ERROR
+                  message: Oops! Something Went Wrong.
+                  meta:
+                    correlation: 12923198-0cb9-4137-8a25-5f8db4e45fa3
+              gap_template_already_exists:
+                summary: >-
+                  Returned when a template with the same code already exists
+                  (real bug, not the intended 409 — see description above).
+                value:
+                  responseCode: CLIENT_ERROR
+                  message: NOTIFICATION_TEMPLATE_ALREADY_EXISTS
   get:
     summary: List notification templates
     operationId: listNotificationTemplates

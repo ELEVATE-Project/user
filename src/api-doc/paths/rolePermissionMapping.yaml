@@ -9,15 +9,14 @@ create:
 
       - Mandatory parameters cannot be empty or null.
 
-      NOTE: previous draft documented this endpoint as `POST /user/v1/rolePermissionMapping/create/{role_id}`
-      with a `role_id` path parameter. This was fabricated/copied from a sibling
-      domain: routes/index.js dynamically dispatches `/:version/:controller/:method`
-      to `controllers/v1/role-permission-mapping.js`, whose `create` method reads
-      only `req.body.role_title`, `req.body.permission_id`, and `req.decodedToken.id`
-      — there is no `role_id` path segment anywhere in the controller or service.
-      The path param has been removed; see gaps.jsonl.
-
       '
+    x-internal-note: >-
+      A previous draft documented this endpoint as `POST
+      /user/v1/rolePermissionMapping/create/{role_id}` with a `role_id` path
+      parameter. This was fabricated/copied from a sibling domain:
+      controllers/v1/role-permission-mapping.js `create` reads only
+      `req.body.role_title`, `req.body.permission_id`, and
+      `req.decodedToken.id` — no `role_id` path segment anywhere. Removed.
     operationId: createRolePermissionMapping
     tags:
       - RolePermissionMapping
@@ -81,19 +80,21 @@ create:
                   properties:
                     correlation:
                       type: string
-                    meetingPlatform:
-                      type: string
             examples:
               gap_no_captured_example:
                 summary: 'No captured response available for this status/message
                   (captured-responses.json has no entries for any role-permission-mapping
-                  endpoint); schema is types-only (no example values). Previous draft
-                  example values (roleId: 2, permissionId: 1, module: mentees, request_type:
-                  [GET], message "Permission added to the role", correlation UUID,
-                  meetingPlatform BBB) were fabricated/copied from a sibling domain
-                  and have been removed. Also note: services/role-permission-mapping.js
-                  create() echoes back `role_title` and `permission_id` (snake_case),
-                  not `roleId`/`permissionId` (camelCase) as the previous draft claimed.'
+                  endpoint); schema is types-only (no example values). Fields
+                  echoed back are snake_case (`role_title`, `permission_id`),
+                  matching services/role-permission-mapping.js create().'
+                x-internal-note: >-
+                  Previous draft example values (roleId: 2, permissionId: 1,
+                  module: mentees, request_type: [GET], message "Permission
+                  added to the role", correlation UUID) were fabricated/copied
+                  from a sibling domain and have been removed, including a
+                  fabricated meta field matching no real response field
+                  anywhere in the codebase. The previous draft also claimed
+                  camelCase (roleId/permissionId) fields, which was wrong.
                 value:
                   responseCode: OK
                   message: ROLE_PERMISSION_CREATED_SUCCESSFULLY
@@ -105,7 +106,6 @@ create:
                       - '<string>'
                   meta:
                     correlation: '<string>'
-                    meetingPlatform: '<string>'
       '400':
         description: Role permission mapping could not be created (referenced permission
           does not exist, or the mapping already exists).
@@ -149,15 +149,15 @@ delete:
 
       - Mandatory parameters cannot be empty or null.
 
-      NOTE: previous draft documented this endpoint as `POST /user/v1/rolePermissionMapping/delete/{role_id}`
-      returning HTTP 202 with a `role_id` path parameter. Both are fabricated/copied
-      from a sibling domain: controllers/v1/role-permission-mapping.js `delete` reads
-      only `req.body.role_title` and `req.body.permission_id` (no path parameter),
-      and services/role-permission-mapping.js `delete()` responds with `httpStatusCode.created`
-      (201), never 202. The path parameter has been removed and the status code
-      corrected; see gaps.jsonl.
-
       '
+    x-internal-note: >-
+      A previous draft documented this endpoint as `POST
+      /user/v1/rolePermissionMapping/delete/{role_id}` returning HTTP 202
+      with a `role_id` path parameter. Both were fabricated/copied from a
+      sibling domain: controllers/v1/role-permission-mapping.js `delete`
+      reads only `req.body.role_title`/`req.body.permission_id` (no path
+      parameter), and services/role-permission-mapping.js `delete()`
+      responds with `httpStatusCode.created` (201), never 202. Corrected.
     operationId: deleteRolePermissionMapping
     tags:
       - RolePermissionMapping
@@ -210,25 +210,26 @@ delete:
                   properties:
                     correlation:
                       type: string
-                    meetingPlatform:
-                      type: string
             examples:
               gap_no_captured_example:
                 summary: 'No captured response available for this status/message
                   (captured-responses.json has no entries for any role-permission-mapping
-                  endpoint); schema is types-only (no example values). Previous draft
-                  claimed status code 202 and message "ROLE_PERMISSION_MAPPING_DELETED_SUCCESSFULLY"
-                  with a fabricated correlation/meetingPlatform example; both the
-                  status code and the message string were wrong/fabricated and have
-                  been corrected/removed. `result` is genuinely `{}` per services/role-permission-mapping.js
+                  endpoint); schema is types-only (no example values). `result`
+                  is genuinely `{}` per services/role-permission-mapping.js
                   delete() (`result: {}`), so that part is code-confirmed.'
+                x-internal-note: >-
+                  Previous draft claimed status code 202 and message
+                  "ROLE_PERMISSION_MAPPING_DELETED_SUCCESSFULLY" with a
+                  fabricated correlation example and a fabricated meta field
+                  matching no real response field anywhere in the codebase;
+                  both the status code and message string were wrong and
+                  have been corrected/removed.
                 value:
                   responseCode: OK
                   message: ROLE_PERMISSION_DELETED_SUCCESSFULLY
                   result: {}
                   meta:
                     correlation: '<string>'
-                    meetingPlatform: '<string>'
       '400':
         description: Role permission mapping not found for the given role_title/permission_id
           pair.
@@ -311,8 +312,6 @@ list:
                   properties:
                     correlation:
                       type: string
-                    meetingPlatform:
-                      type: string
             examples:
               gap_permissions_found:
                 summary: 'No captured response available for this status/message
@@ -332,7 +331,6 @@ list:
                         service: '<string>'
                   meta:
                     correlation: '<string>'
-                    meetingPlatform: '<string>'
               gap_permissions_empty:
                 summary: 'No captured response available. This is the "no permissions
                   found" branch of services/role-permission-mapping.js list() —
@@ -346,7 +344,6 @@ list:
                     permissions: []
                   meta:
                     correlation: '<string>'
-                    meetingPlatform: '<string>'
       '401':
         description: >-
           Unauthorized. X-auth-token is either missing or invalid. (The

@@ -188,11 +188,13 @@ requestOrgRoleRequest:
       properties:
         about:
           type: string
+          pattern: '^[a-zA-Z0-9\-.,\s]+$'
           example: I would like to mentor.
           description: Optional free-text field describing the requester.
           x-internal-note: 'Validated in validators/v1/organization.js requestOrgRole.'
         experience:
           type: string
+          pattern: '^[0-9]+$'
           example: '5'
           description: Optional numeric-string field (validated with isNumeric()) describing years of
             experience.

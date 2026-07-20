@@ -70,21 +70,23 @@ createUserRequest:
 loginRequest:
   type: object
   description: >-
-    Request payload for user login. `identifier` and `phone_code` are
-    required (phone_code applies only when the identifier is a phone
-    number), and at least one of `password` or `otp` must be provided. Which
-    credential type is actually accepted also depends on the tenant's
-    configured authentication mode.
+    Request payload for user login. `identifier` is required; `phone_code` is
+    required/validated only when the identifier is a phone number, and at
+    least one of `password` or `otp` must be provided. Which credential type
+    is actually accepted also depends on the tenant's configured
+    authentication mode.
   x-internal-note: >-
     password/otp requirement enforced in services/account.js login (line
     761: if (!hasOtp && !hasPassword) return AUTH_CREDENTIAL_REQUIRED).
     Auth-mode gating (AUTH_MODES.PASSWORD / AUTH_MODES.OTP) returns
     AUTH_MODE_NOT_ALLOWED when a disallowed credential type is supplied;
     intentionally not modelled in the schema since it depends on runtime
-    tenant configuration, not the request body alone.
+    tenant configuration, not the request body alone. phone_code is likewise
+    conditionally required (only for phone identifiers) so it's kept out of
+    the structural `required` array, consistent with that same runtime-gating
+    pattern.
   required:
     - identifier
-    - phone_code
   properties:
     identifier:
       type: string

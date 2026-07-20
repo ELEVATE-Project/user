@@ -48,7 +48,7 @@ create:
               value:
                 label: ReplayFeature
                 code: feat3t7os9otwv
-                display_order: 1
+                display_order: '1'
     responses:
       '201':
         description: Created. Feature created successfully.
@@ -80,7 +80,7 @@ create:
         description: >-
           Bad Request. Feature with the same `code` already exists
           (UniqueConstraintError). No live captured example exists for
-          this case; see featureAlreadyExists400Response and gaps.jsonl.
+          this case; schema is types-only.
         content:
           application/json:
             schema:
@@ -113,6 +113,27 @@ create:
                   meta:
                     correlation: f04b0f11-1f8c-4a94-9255-284a57a2d1be
                   message: Validation failed, Entered data is incorrect!
+      '401':
+        description: Unauthorized. X-auth-token is either missing or invalid.
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape only, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                  example: UNAUTHORIZED
+                message:
+                  type: string
+                error:
+                  type: array
+                  items:
+                    type: object
+                meta:
+                  type: object
 
 update:
   '{id}':
@@ -176,8 +197,7 @@ update:
         '200':
           description: >-
             OK. Feature updated successfully. No live captured example
-            exists for this case; see featureUpdate200Response and
-            gaps.jsonl.
+            exists for this case; schema is types-only.
           content:
             application/json:
               schema:
@@ -201,12 +221,32 @@ update:
           description: >-
             Unprocessable Entity. Request body failed validation (e.g.
             missing/invalid `label`). No live captured example exists
-            specifically for the update branch; see
-            featureValidation422Response and gaps.jsonl.
+            specifically for the update branch; schema is types-only.
           content:
             application/json:
               schema:
                 $ref: ../components/feature.yaml#/featureValidation422Response
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          x-internal-note: >-
+            No captured example exists for this status on this endpoint -
+            shape only, not a fabricated body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: UNAUTHORIZED
+                  message:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: object
+                  meta:
+                    type: object
 
 list:
   get:
@@ -306,6 +346,31 @@ list:
                     data: []
                     count: 0
                   meta: {}
+      '400':
+        description: >-
+          Bad Request. `search` contains characters rejected by the shared
+          pagination middleware.
+        x-internal-note: >-
+          middlewares/pagination.js rejects a search string matching
+          /[`!#$%^&*()_+\-=\[\]{};':"\\|<>\/?~]/ with statusCode 400. No
+          captured example exists for this status on this endpoint -
+          shape-only.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                  example: CLIENT_ERROR
+                message:
+                  type: string
+                error:
+                  type: array
+                  items:
+                    type: object
+                meta:
+                  type: object
       '401':
         description: Unauthorized. X-auth-token is either missing or invalid.
         x-internal-note: >-
@@ -393,3 +458,56 @@ delete:
                     meta:
                       correlation: d309a7d9-2395-4072-ab50-8846e929213e
                     message: Feature not found
+        '422':
+          description: Unprocessable Entity. `id` path parameter is missing.
+          x-internal-note: >-
+            validators/v1/feature.js delete(): req.checkParams('id').notEmpty().
+            No captured example exists for this status - shape-only.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: CLIENT_ERROR
+                  error:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                          example: params
+                        param:
+                          type: string
+                          example: id
+                        msg:
+                          type: string
+                          example: id param is empty
+                  meta:
+                    type: object
+                  message:
+                    type: string
+                    example: Validation failed, Entered data is incorrect!
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          x-internal-note: >-
+            No captured example exists for this status on this endpoint -
+            shape only, not a fabricated body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: UNAUTHORIZED
+                  message:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: object
+                  meta:
+                    type: object

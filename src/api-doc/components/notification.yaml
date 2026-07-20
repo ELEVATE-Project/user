@@ -309,22 +309,9 @@ notAdmin400Response:
       type: string
     message:
       type: string
-
-# 409 - template already exists (unique constraint).
-# GAP: no entry in captured-responses.json for this branch. Shape-only (types
-# only) - message key name is a literal string from services/notification.js
-# (responses.failureResponse), but the full wrapped body shape is unverified.
-alreadyExists409Response:
-  type: object
-  description: >-
-    Conflict. A notification template with the same code already exists for
-    the organization and tenant.
-  x-internal-note: >-
-    Unique-constraint violation (Sequelize). Message key
-    NOTIFICATION_TEMPLATE_ALREADY_EXISTS. No captured response body is
-    available - schema is shape-only, no example values.
-  properties:
-    responseCode:
-      type: string
-    message:
-      type: string
+# NOTE: a dedicated 409 (alreadyExists409Response) used to be documented here
+# for the duplicate-template case, but it's unreachable in the real service
+# (services/notification.js's statusCode: httpStatusCode.conflict is
+# undefined, so this surfaces as a 500 instead) - see the gap_template_
+# already_exists example under the 500 response in paths/notification.yaml,
+# and TODO-reverted-bugfixes.md.

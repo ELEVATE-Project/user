@@ -254,6 +254,14 @@ list:
           application/json:
             schema:
               $ref: ../components/userentity.yaml#/entityList401Response
+      '422':
+        description: >-
+          Unprocessable Entity. `entity_type_id` query parameter is missing,
+          empty, or non-numeric.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userentity.yaml#/entityList422Response
 delete:
   '{id}':
     delete:
@@ -300,3 +308,9 @@ delete:
             application/json:
               schema:
                 $ref: ../components/userentity.yaml#/deleteUserEntity400Response
+        '422':
+          description: Unprocessable Entity. `id` path parameter is missing.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/userentity.yaml#/deleteUserEntity422Response

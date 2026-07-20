@@ -22,7 +22,7 @@ createUserEntityRequest:
   properties:
     value:
       type: string
-      description: Must contain letters only, no spaces.
+      description: Alphanumeric characters and spaces allowed.
       x-internal-note: Validated in validators/v1/entity.js.
       example: AP
     label:
@@ -145,6 +145,88 @@ createUserEntity201Response:
           version: 0
       correlation: 243b2c16-47ba-477a-9521-ef6b337c9dfe
 
+deleteUserEntity422Response:
+  type: object
+  description: >-
+    Validation failed. Returned when the `id` path parameter is missing.
+  x-internal-note: No captured example exists for this status - shape-only, see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+            example: params
+          param:
+            type: string
+            example: id
+          msg:
+            type: string
+            example: id param is empty
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: params
+        param: id
+        msg: id param is empty
+    meta:
+      correlation: 5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b
+    message: Validation failed, Entered data is incorrect!
+
+entityList422Response:
+  type: object
+  description: >-
+    Validation failed. Returned when `entity_type_id` query parameter is
+    missing, empty, or non-numeric.
+  x-internal-note: No captured example exists for this status - shape-only, see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+            example: query
+          param:
+            type: string
+            example: entity_type_id
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: query
+        param: entity_type_id
+        msg: entity_type_id field is empty
+    meta:
+      correlation: 6f7a8b9c-0d1e-4f2a-8b3c-4d5e6f7a8b9c
+    message: Validation failed, Entered data is incorrect!
+
 createUserEntity422Response:
   type: object
   description: >-
@@ -231,7 +313,7 @@ updateUserEntityRequest:
   properties:
     value:
       type: string
-      description: Must contain letters only, no spaces.
+      description: Alphanumeric characters and spaces allowed.
       example: en
     label:
       type: string
@@ -502,9 +584,11 @@ entityList200Response:
   type: object
   description: User entities fetched successfully.
   x-internal-note: >-
-    No captured example exists for this status (services/entities.js `list`)
-    - schema is shape-only, inferred from the entity record shape seen in
-    createUserEntity201Response, see gaps.jsonl.
+    No captured example exists for this status - schema is shape-only,
+    inferred from services/entities.js `list`'s explicit attributes array
+    (['id', 'entity_type_id', 'value', 'label', 'status', 'type',
+    'created_by', 'created_at']), not from createUserEntity201Response (a
+    different endpoint's shape), see gaps.jsonl.
   properties:
     responseCode:
       type: string
@@ -531,4 +615,8 @@ entityList200Response:
               status:
                 type: string
               type:
+                type: string
+              created_by:
+                type: number
+              created_at:
                 type: string

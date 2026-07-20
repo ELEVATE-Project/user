@@ -115,6 +115,14 @@ file:
                 meta:
                   correlation: 6a8c8513-0ac8-4eda-9298-576ea4752b1a
                 message: You do not have the required permissions to access this resource. Please contact your administrator for assistance.
+        '422':
+          description: >-
+            Unprocessable Entity. `fileName` query parameter is missing or
+            empty.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/cloudServices.yaml#/cloudServicesValidationErrorResponse422
   getDownloadableUrl:
     get:
       summary: Cloud Services - Get Downloadable URL

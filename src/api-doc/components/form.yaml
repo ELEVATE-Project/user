@@ -159,6 +159,54 @@ createForm400Response:
       properties:
         correlation:
           type: string
+updateForm422Response:
+  description: >-
+    Unprocessable Entity. Request-body validation failed (type, sub_type,
+    data.template_name).
+  x-internal-note: >-
+    No captured example exists for this status on the update branch - shape
+    follows the same pattern as createForm422Response, restricted to
+    validators/v1/form.js `update`'s own checks.
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+          param:
+            type: string
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: body
+        param: type
+        msg: type field is empty
+      - location: body
+        param: sub_type
+        msg: sub_type field is empty
+      - location: body
+        param: data.template_name
+        msg: data.template_name field is empty
+    meta:
+      correlation: 3a4b5c6d-7e8f-4a9b-8c1d-3a4b5c6d7e8f
+    message: Validation failed, Entered data is incorrect!
+
 createForm422Response:
   description: Unprocessable Entity. Request-body validation failed.
   x-internal-note: Captured from a real 422 response (express-validator layer,

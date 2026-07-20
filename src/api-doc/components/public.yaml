@@ -43,6 +43,10 @@ checkUsernameSuccessResponse:
     result:
       available: true
     meta:
+      formsVersion:
+        - id: 1
+          type: profile
+          version: 3
       correlation: abe8b9d7-de25-423d-8f30-3278b39c4355
 
 validationErrorResponse:
@@ -107,3 +111,231 @@ tenantNotFoundResponse:
     meta:
       correlation: cb11e059-fda6-475c-8e24-dd82c2fae410
     message: Tenant domain not found. Please contact your administrator for assistance.
+
+serverErrorResponse:
+  type: object
+  description: Server error. responseCode SERVER_ERROR.
+  properties:
+    responseCode:
+      type: string
+      example: SERVER_ERROR
+    message:
+      type: string
+      example: Oops! Something Went Wrong.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+
+branding201Response:
+  type: object
+  description: >-
+    Tenant branding/details, resolved from the caller's tenant_code header or
+    request domain. Organization details are included only when `org_code` is
+    supplied and resolves successfully — supplying `org_code` currently
+    triggers a server-side error instead (see the operation's 500 response).
+  x-internal-note: >-
+    No live 200/201 capture exists for this endpoint —
+    captured-responses.json only has 406/500 cases for it. Shape is inferred
+    directly from dtos/tenantDTO.js#publicTransform, not a fabricated body.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: TENANT_DETAILS
+    result:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+        theming:
+          type: object
+        configuration:
+          type: object
+        meta:
+          type: object
+        organization:
+          type: object
+          description: Present only when org_code was supplied and resolved.
+          properties:
+            name:
+              type: string
+            code:
+              type: string
+            description:
+              type: string
+            status:
+              type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+  example:
+    responseCode: OK
+    message: TENANT_DETAILS
+    result:
+      code: sample_tenant
+      name: Sample Tenant
+      status: ACTIVE
+      description: Sample tenant description
+      logo: https://example.com/logo.png
+      theming: {}
+      configuration: {}
+      meta: {}
+    meta:
+      correlation: 3f9c1a2b-6d4e-4b8a-9f3c-1a2b6d4e4b8a
+
+userInvites200Response:
+  type: object
+  description: >-
+    Invitee's prefilled profile data for a pending organization invite,
+    resolved by `invitation_key` + `tenant_code`.
+  x-internal-note: >-
+    No live 200 capture exists for this endpoint — captured-responses.json
+    only has 406/500 cases for it. Shape is inferred directly from
+    dtos/userDTO.js#userInviteDTO (built on #transformUser, minus `id` and
+    `organizations`, plus `editable_fields` and any custom entity-type fields
+    dynamically merged in by the service), not a fabricated body.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: USER_DATA_FETCHED
+    result:
+      type: object
+      description: >-
+        Known static fields are listed below; additional dynamic fields keyed
+        by entity-type value (e.g. custom profile questions) may also be
+        present.
+      properties:
+        email:
+          type: string
+        email_verified:
+          type: boolean
+        name:
+          type: string
+        username:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        phone_code:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        about:
+          type: string
+          nullable: true
+        share_link:
+          type: string
+          nullable: true
+        status:
+          type: string
+        image:
+          type: string
+          nullable: true
+        has_accepted_terms_and_conditions:
+          type: boolean
+        languages:
+          type: array
+          items:
+            type: string
+        preferred_language:
+          type: string
+          nullable: true
+        custom_entity_text:
+          type: object
+        tenant_code:
+          type: string
+        meta:
+          type: object
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        deleted_at:
+          type: string
+          nullable: true
+        editable_fields:
+          type: array
+          items:
+            type: string
+      additionalProperties: true
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+  example:
+    responseCode: OK
+    message: USER_DATA_FETCHED
+    result:
+      email: invitee@example.com
+      email_verified: false
+      name: Sample Invitee
+      username: sample_invitee
+      phone: null
+      phone_code: null
+      location: null
+      about: null
+      share_link: null
+      status: ACTIVE
+      image: null
+      has_accepted_terms_and_conditions: false
+      languages: []
+      preferred_language: null
+      custom_entity_text: {}
+      tenant_code: default_tenant
+      meta: {}
+      created_at: '2026-01-01T00:00:00.000Z'
+      updated_at: '2026-01-01T00:00:00.000Z'
+      deleted_at: null
+      editable_fields:
+        - name
+        - about
+    meta:
+      correlation: 7b2e4f1a-8c3d-4e5f-9a1b-2c3d4e5f9a1b
+
+userInvites406Response:
+  type: object
+  description: >-
+    Not Acceptable. No matching, still-invited invitation exists for the given
+    `invitation_key` and `tenant_code`.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+      example: Invitation is Invalid or expired. Please contact your Admin.
+  example:
+    responseCode: CLIENT_ERROR
+    error: []
+    meta:
+      correlation: 1d9ad222-4fec-4189-b980-e5764d625116
+    message: Invitation is Invalid or expired. Please contact your Admin.

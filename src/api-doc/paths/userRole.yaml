@@ -235,12 +235,27 @@ Create:
                         type: formsrggjf
                         version: 0
                     correlation: 78d9dec1-7752-4b82-8cb5-320fbebc3f71
-      '409':
-        description: Conflict - role title already exists (ROLE_IS_NOT_UNIQUE)
+      '500':
+        description: >-
+          Internal Server Error. This is the real, current behavior when a
+          role with the same title already exists - a server misconfiguration
+          causes this case to raise a 500 instead of a clean 409. The
+          response body still carries the original
+          CLIENT_ERROR/ROLE_IS_NOT_UNIQUE content, only the HTTP status is
+          affected.
+        x-internal-note: >-
+          services/user-role.js create() sets `statusCode:
+          httpStatusCode.conflict` on the ROLE_IS_NOT_UNIQUE failure path, but
+          generics/http-status.js has no `conflict` key at all - it's
+          `undefined`. responses.failureResponse's `statusCode = 500` default
+          parameter then kicks in for that explicit `undefined`, while
+          message/responseCode pass through unchanged, so this documented 409
+          never actually happens; real clients get HTTP 500 with a
+          CLIENT_ERROR/ROLE_IS_NOT_UNIQUE body. See TODO-reverted-bugfixes.md.
         content:
           application/json:
             schema:
-              $ref: ../components/userRole.yaml#/UserRoleCreateConflict409
+              $ref: ../components/userRole.yaml#/UserRoleCreate500Response
         # No captured example for this status/message. Shape-only. See gaps.jsonl.
       '401':
         description: Unauthorized
@@ -313,12 +328,28 @@ update:
               schema:
                 $ref: ../components/userRole.yaml#/UserRoleUpdateBadRequest400
           # No captured example. Shape-only. See gaps.jsonl.
-        '409':
-          description: Conflict - role title already exists (ROLE_IS_NOT_UNIQUE)
+        '500':
+          description: >-
+            Internal Server Error. This is the real, current behavior when
+            the update would result in a duplicate role title - a server
+            misconfiguration causes this case to raise a 500 instead of a
+            clean 409. The response body still carries the original
+            CLIENT_ERROR/ROLE_IS_NOT_UNIQUE content, only the HTTP status is
+            affected.
+          x-internal-note: >-
+            services/user-role.js update() sets `statusCode:
+            httpStatusCode.conflict` on the ROLE_IS_NOT_UNIQUE failure path,
+            but generics/http-status.js has no `conflict` key at all - it's
+            `undefined`. responses.failureResponse's `statusCode = 500`
+            default parameter then kicks in for that explicit `undefined`,
+            while message/responseCode pass through unchanged, so this
+            documented 409 never actually happens; real clients get HTTP 500
+            with a CLIENT_ERROR/ROLE_IS_NOT_UNIQUE body. See
+            TODO-reverted-bugfixes.md.
           content:
             application/json:
               schema:
-                $ref: ../components/userRole.yaml#/UserRoleUpdateConflict409
+                $ref: ../components/userRole.yaml#/UserRoleUpdate500Response
           # No captured example. Shape-only. See gaps.jsonl.
         '401':
           description: Unauthorized

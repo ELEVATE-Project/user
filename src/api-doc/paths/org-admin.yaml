@@ -99,34 +99,23 @@ updateRequestStatus:
               $ref: ../components/org-admin.yaml#/updateRequestStatus200Response
       '400':
         description: >-
-          Bad Request. Three distinct failure causes share this status code:
-          request_id not found, the request was already handled, or the
-          update affected 0 rows.
+          Bad Request. Two distinct failure causes share this status code:
+          the request was already handled, or the update affected 0 rows.
         x-internal-note: >-
-          Only the requestNotFound example below is a real capture
-          (REQUEST_NOT_FOUND). invalidOrgRoleRequest (INAVLID_ORG_ROLE_REQ)
-          and orgRoleRequestFailed (ORG_ROLE_REQ_FAILED) have no captured
-          body - message values are the literal keys from
-          services/org-admin.js, shape-only otherwise.
+          Neither invalidOrgRoleRequest (INAVLID_ORG_ROLE_REQ) nor
+          orgRoleRequestFailed (ORG_ROLE_REQ_FAILED) has a captured body -
+          message values are the literal keys from services/org-admin.js,
+          shape-only otherwise.
         content:
           application/json:
             schema:
               oneOf:
-                - $ref: ../components/org-admin.yaml#/updateRequestStatus400NotFoundResponse
                 - $ref: ../components/org-admin.yaml#/updateRequestStatus400InvalidResponse
                 - $ref: ../components/org-admin.yaml#/updateRequestStatus400FailedResponse
                 - $ref: ../components/org-admin.yaml#/orgAdminNotAdminResponse
               discriminator:
                 propertyName: message
             examples:
-              requestNotFound:
-                summary: request_id does not match any request (real capture)
-                value:
-                  responseCode: CLIENT_ERROR
-                  error: []
-                  message: Role Change Request not found.
-                  meta:
-                    correlation: 2b79fd8a-95e2-419c-86a0-96f8ae529118
               invalidOrgRoleRequest:
                 summary: Request already handled (not in REQUESTED status)
                 value:
@@ -139,6 +128,28 @@ updateRequestStatus:
                   responseCode: CLIENT_ERROR
                   error: []
                   message: ORG_ROLE_REQ_FAILED
+      '500':
+        description: >-
+          Internal Server Error. This is the real, current behavior when
+          `request_id` doesn't match any request — a missing null check
+          causes an uncaught error instead of a clean 400.
+        x-internal-note: >-
+          services/org-admin.js updateRequestStatus() has no
+          `if (!requestDetail)` guard before reading `requestDetail.status`,
+          so a non-matching request_id throws instead of returning a clean
+          failureResponse. See TODO-reverted-bugfixes.md. The example below
+          is the live capture for this exact case (captured-responses.json,
+          key "POST /user/v1/org-admin/updateRequestStatus", case
+          "not-found request_id -> 404").
+        content:
+          application/json:
+            schema:
+              $ref: ../components/org-admin.yaml#/updateRequestStatus500Response
+            example:
+              responseCode: SERVER_ERROR
+              message: Oops! Something Went Wrong.
+              meta:
+                correlation: 57887cc5-885e-475c-b5dc-6daae99b2342
 getRequestDetails:
   '{id}':
     get:
@@ -346,7 +357,7 @@ deactivateUser:
       content:
         application/json:
           schema:
-            $ref: ../components/org-admin.yaml#/deactivateUserRequest
+            $ref: ../components/org-admin.yaml#/orgAdminDeactivateUserRequest
           examples:
             byIds:
               summary: Deactivate by ids
@@ -363,7 +374,7 @@ deactivateUser:
         content:
           application/json:
             schema:
-              $ref: ../components/org-admin.yaml#/deactivateUser200Response
+              $ref: ../components/org-admin.yaml#/orgAdminDeactivateUser200Response
       '400':
         description: >-
           Bad Request. Two distinct causes share this status code: no rows
@@ -374,7 +385,7 @@ deactivateUser:
           application/json:
             schema:
               oneOf:
-                - $ref: ../components/org-admin.yaml#/deactivateUser400Response
+                - $ref: ../components/org-admin.yaml#/orgAdminDeactivateUser400Response
                 - $ref: ../components/org-admin.yaml#/orgAdminNotAdminResponse
       '422':
         description: >-
@@ -383,7 +394,7 @@ deactivateUser:
         content:
           application/json:
             schema:
-              $ref: ../components/org-admin.yaml#/deactivateUser422Response
+              $ref: ../components/org-admin.yaml#/orgAdminDeactivateUser422Response
             example:
               responseCode: CLIENT_ERROR
               error: []
@@ -568,12 +579,16 @@ createUsers:
       exists for this operation either (validators/v1/org-admin.js has no
       createUsers export), so none of the request fields below are enforced
       ground truth. No captured-responses.json entry exists for this
-      endpoint at all. Post-hoc correction: an earlier pass on this file
-      claimed `req.body.upload_type.toUpperCase()` is called unconditionally
-      and throws an uncaught TypeError when upload_type is absent. Re-checked
-      against current source: the call is actually
-      `req?.body?.upload_type?.toUpperCase()` (fully optional-chained), so it
-      safely evaluates to `undefined` rather than throwing - no bug here.
+      endpoint at all. `req?.body?.upload_type.toUpperCase()` is called with
+      no null-check before `.toUpperCase()` (confirmed by direct read of
+      controllers/v1/org-admin.js createUsers), so an absent upload_type
+      throws an uncaught TypeError, surfacing as a generic 500 rather than a
+      clean validation error. (A prior "Post-hoc correction" note here
+      claimed the call was fully optional-chained as
+      `req?.body?.upload_type?.toUpperCase()` and therefore safe - that was
+      itself wrong; the real source has no `?.` before `.toUpperCase()`. See
+      components/org-admin.yaml#/createUsersRequest for the same,
+      already-accurate description, and TODO-reverted-bugfixes.md.)
     tags:
       - Org Admin APIs
     parameters:

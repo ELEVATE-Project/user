@@ -538,12 +538,16 @@ assignRoleRequest:
     - role_id
   properties:
     user_id:
-      type: integer
-      description: Target user ID.
+      type: number
+      description: >-
+        Target user ID. Validator only enforces .isNumeric(), which also
+        accepts non-integer numeric strings.
       example: 22
     role_id:
-      type: integer
-      description: Role ID to assign.
+      type: number
+      description: >-
+        Role ID to assign. Validator only enforces .isNumeric(), which also
+        accepts non-integer numeric strings.
       example: 1
     organization_id:
       type: integer
@@ -725,16 +729,21 @@ addOrgAdminRequest:
       title: By user_id
   properties:
     organization_id:
-      type: integer
-      description: The organization to which the user will be assigned as org admin.
+      type: number
+      description: >-
+        The organization to which the user will be assigned as org admin.
+        Validator only enforces .isNumeric(), which also accepts non-integer
+        numeric strings.
       example: 55
     identifier:
       type: string
       description: The user's email, phone, or username (mutually exclusive with user_id).
       example: orgadmin@example.com
     user_id:
-      type: integer
-      description: The user's ID (mutually exclusive with identifier).
+      type: number
+      description: >-
+        The user's ID (mutually exclusive with identifier). Validator only
+        enforces .isNumeric(), which also accepts non-integer numeric strings.
       example: 12
     phone_code:
       type: string

@@ -65,8 +65,6 @@ create:
                   properties:
                     correlation:
                       type: string
-                    meetingPlatform:
-                      type: string
             examples:
               gap_no_captured_example:
                 summary: Module created successfully.
@@ -80,7 +78,6 @@ create:
                     status: '<string>'
                   meta:
                     correlation: '<string>'
-                    meetingPlatform: '<string>'
       '400':
         description: Module code already exists.
         content:
@@ -103,7 +100,7 @@ update:
   '{id}':
     post:
       summary: Update Modules
-      description: 'Create modules for users.
+      description: 'Update an existing module.
 
         - Endpoint: `/user/v1/modules/update`.
 
@@ -172,8 +169,6 @@ update:
                     properties:
                       correlation:
                         type: string
-                      meetingPlatform:
-                        type: string
               examples:
                 gap_no_captured_example:
                   summary: Module updated successfully.
@@ -187,10 +182,8 @@ update:
                       code: '<string>'
                     meta:
                       correlation: '<string>'
-                      meetingPlatform: '<string>'
         '400':
-          description: Module not found for the given id, or module could not be
-            updated.
+          description: The module update, or the related permissions update, failed.
           content:
             application/json:
               schema:
@@ -201,21 +194,6 @@ update:
                   message:
                     type: string
               examples:
-                gap_modules_not_found:
-                  summary: Returned when no module exists with the given id.
-                  x-internal-note: >-
-                    Per services/modules.js update() returns MODULES_NOT_FOUND
-                    (via responses.failureResponse(), statusCode 400) when
-                    modulesQueries.findModulesById(id) returns falsy. CORRECTION
-                    (post-hoc review): an earlier pass on this file mistakenly
-                    claimed this was a bare `throw new Error(...)` with unclear
-                    resulting HTTP behavior — re-checked against the current
-                    source and that is not the case; it is a normal 400
-                    CLIENT_ERROR response. No captured response available -
-                    schema is shape-only.
-                  value:
-                    responseCode: CLIENT_ERROR
-                    message: MODULES_NOT_FOUND
                 gap_modules_not_updated:
                   summary: Returned when the module update, or the related permissions
                     update, fails.
@@ -223,6 +201,37 @@ update:
                   value:
                     responseCode: CLIENT_ERROR
                     message: MODULES_NOT_UPDATED
+        '500':
+          description: >-
+            Internal Server Error. This is the real, current behavior when no
+            module exists for the given id — a server-side error is raised
+            instead of a clean 400 in this case.
+          x-internal-note: >-
+            services/modules.js update(): when modulesQueries.findModulesById(id)
+            returns falsy, the code does a bare `throw new Error('MODULES_NOT_FOUND')`
+            (not responses.failureResponse()). The controller's catch just
+            `return error` (the raw Error object), and routes/index.js's
+            response handler only sets a clean status from
+            error.statusCode/error.responseCode — a plain Error has neither,
+            so it falls through to the generic 500 "Oops! Something Went
+            Wrong." path, not a 400 CLIENT_ERROR. See
+            TODO-reverted-bugfixes.md. (A prior "CORRECTION" note here
+            claimed this was confirmed to be a normal 400 - that was itself
+            wrong; direct source confirms the bare throw is still there.)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: SERVER_ERROR
+                  message:
+                    type: string
+                    example: Oops! Something Went Wrong.
+              example:
+                responseCode: SERVER_ERROR
+                message: Oops! Something Went Wrong.
 list:
   get:
     summary: Modules List
@@ -265,7 +274,7 @@ list:
         required: false
     responses:
       '200':
-        description: ''
+        description: OK. Modules fetched successfully.
         content:
           application/json:
             schema:
@@ -300,8 +309,6 @@ list:
                   properties:
                     correlation:
                       type: string
-                    meetingPlatform:
-                      type: string
             examples:
               gap_no_captured_example:
                 summary: Modules retrieved successfully.
@@ -317,9 +324,9 @@ list:
                     count: 1
                   meta:
                     correlation: '<string>'
-                    meetingPlatform: '<string>'
       '400':
-        description: No modules found.
+        description: No modules found, or `search` contains characters rejected by the
+          shared pagination middleware.
         content:
           application/json:
             schema:
@@ -336,11 +343,21 @@ list:
                 value:
                   responseCode: '<string>'
                   message: MODULES_HAS_EMPTY_LIST
+              gap_invalid_search_characters:
+                summary: Returned when `search` contains characters rejected by the
+                  pagination middleware.
+                x-internal-note: >-
+                  middlewares/pagination.js rejects a search string matching
+                  /[`!#$%^&*()_+\-=\[\]{};':"\\|<>\/?~]/ with statusCode 400;
+                  no captured response available. Shape only.
+                value:
+                  responseCode: '<string>'
+                  message: '<string>'
 delete:
   '{id}':
     delete:
       summary: Delete Modules
-      description: 'Create modules for users.
+      description: 'Delete an existing module.
 
         - Endpoint: `/user/v1/modules/delete`.
 
@@ -373,8 +390,6 @@ delete:
                     properties:
                       correlation:
                         type: string
-                      meetingPlatform:
-                        type: string
               examples:
                 gap_no_captured_example:
                   summary: Module deleted successfully.
@@ -385,7 +400,6 @@ delete:
                     result: {}
                     meta:
                       correlation: '<string>'
-                      meetingPlatform: '<string>'
         '400':
           description: Module not found, or module could not be deleted.
           content:

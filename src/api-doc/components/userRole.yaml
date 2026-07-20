@@ -243,23 +243,36 @@ UserRoleCreateResponse201:
         correlation:
           type: string
 
-UserRoleCreateConflict409:
+UserRoleCreate500Response:
   type: object
   description: >-
-    Conflict. Returned when a role with the same title already exists.
+    Internal Server Error. Real, current behavior when a role with the same
+    title already exists — this isn't a clean 409 because of a server
+    misconfiguration described below. The HTTP status is 500, but the body
+    still carries the original CLIENT_ERROR/ROLE_IS_NOT_UNIQUE content -
+    responses.failureResponse() was called with a real message/responseCode,
+    just an undefined statusCode, so routes/index.js's error handler takes
+    its "has statusCode/responseCode" branch (falling back to 500 only for
+    the missing statusCode), not the fully-generic "Oops!" branch used for
+    bare `throw new Error(...)` cases elsewhere in this codebase.
   x-internal-note: >-
-    Shape-only. Emitted by services/user-role.js create() on Sequelize unique constraint
-    violation (message ROLE_IS_NOT_UNIQUE). No captured example exists for this status code
-    on this endpoint. No example values are asserted.
+    Shape-only. Emitted by services/user-role.js create() on Sequelize unique
+    constraint violation (message ROLE_IS_NOT_UNIQUE, responseCode
+    CLIENT_ERROR), but with statusCode: httpStatusCode.conflict (undefined -
+    no such key in generics/http-status.js). routes/index.js:
+    `status = error.statusCode || 500` (500, since undefined is falsy),
+    `responseCode = error.responseCode || 'SERVER_ERROR'` (stays
+    CLIENT_ERROR, since it was set), `message = error.message || '...'`
+    (stays ROLE_IS_NOT_UNIQUE). No captured example exists for this status
+    code on this endpoint. No example values are asserted beyond what's
+    derived from the code above.
   properties:
     responseCode:
       type: string
+      example: CLIENT_ERROR
     message:
       type: string
-    error:
-      type: array
-      items:
-        type: object
+      example: ROLE_IS_NOT_UNIQUE
 
 UserRoleUpdateResponse201:
   type: object
@@ -316,22 +329,27 @@ UserRoleUpdateBadRequest400:
       items:
         type: object
 
-UserRoleUpdateConflict409:
+UserRoleUpdate500Response:
   type: object
   description: >-
-    Conflict. Returned when the update would result in a duplicate role title.
+    Internal Server Error. Real, current behavior when the update would
+    result in a duplicate role title — a server misconfiguration causes this
+    case to raise a 500 instead of a clean 409. The HTTP status is 500, but
+    the body still carries the original CLIENT_ERROR/ROLE_IS_NOT_UNIQUE
+    content - same mechanism as UserRoleCreate500Response.
   x-internal-note: >-
-    Shape-only. Emitted by services/user-role.js update() on Sequelize unique constraint
-    violation (message ROLE_IS_NOT_UNIQUE). No captured example exists.
+    Shape-only. Emitted by services/user-role.js update() on Sequelize unique
+    constraint violation (message ROLE_IS_NOT_UNIQUE, responseCode
+    CLIENT_ERROR), but with statusCode: httpStatusCode.conflict (undefined -
+    no such key in generics/http-status.js), same mechanism as
+    UserRoleCreate500Response. No captured example exists.
   properties:
     responseCode:
       type: string
+      example: CLIENT_ERROR
     message:
       type: string
-    error:
-      type: array
-      items:
-        type: object
+      example: ROLE_IS_NOT_UNIQUE
 
 UserRoleDeleteResponse202:
   type: object

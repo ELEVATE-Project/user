@@ -106,6 +106,12 @@ update:
             application/json:
               schema:
                 $ref: ../components/entity-type.yaml#/updateEntityType400Response
+        '422':
+          description: Unprocessable Entity. Request body failed validation.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/entity-type.yaml#/updateEntityType422Response
 read:
   post:
     summary: Read Entity Type
@@ -256,3 +262,9 @@ delete:
             application/json:
               schema:
                 $ref: ../components/entity-type.yaml#/deleteEntityType400Response
+        '422':
+          description: Unprocessable Entity. `id` path parameter is missing/invalid.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/entity-type.yaml#/deleteEntityType422Response

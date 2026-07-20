@@ -52,3 +52,141 @@ checkUsername:
                   meta:
                     correlation: 2f38149f-ee17-4848-a5e9-ffe62b626937
                   message: Validation failed, Entered data is incorrect!
+
+branding:
+  get:
+    summary: Get tenant (and optionally organization) branding details
+    operationId: branding
+    tags:
+      - Public APIs
+    security: []
+    description: "This API resolves and returns tenant branding/details, and\n
+      optionally organization details.\n
+      - Endpoint: `/user/v1/public/branding`\n
+      - `org_code` is an optional query parameter; when supplied, organization\n
+      details are additionally resolved.\n
+      - The tenant is resolved from the `X-Tenant-Code` header if present,\n
+      otherwise from the caller's request domain."
+    parameters:
+      - in: query
+        name: org_code
+        required: false
+        schema:
+          type: string
+        description: Organization code to additionally resolve organization branding details for.
+        example: org_sample_code
+    responses:
+      '201':
+        description: >-
+          Created. Tenant branding details (organization details are only
+          included when `org_code` is supplied and resolves cleanly — see the
+          500 response below for the current real behavior when `org_code` is
+          supplied).
+        content:
+          application/json:
+            schema:
+              $ref: ../components/public.yaml#/branding201Response
+      '406':
+        description: >-
+          Not Acceptable. The tenant could not be resolved from the caller's
+          tenant_code header/domain, or the resolved tenant_code has no
+          matching tenant.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/public.yaml#/tenantNotFoundResponse
+      '500':
+        description: >-
+          Internal Server Error. Whenever `org_code` is supplied, this is the
+          real, current behavior instead of a successful organization-scoped
+          response — a known server-side bug causes the lookup to fail with
+          an unhandled error in that case.
+        x-internal-note: >-
+          services/public.js `tenantBranding`: whenever `organizationCode` is
+          truthy, the code references `tenantDomain.tenant_code`, but
+          `tenantDomain` is a `const` scoped inside the earlier
+          `if (!code) {...}` block (or never declared at all in this call, if
+          a tenant_code header was used instead of domain resolution) — a
+          ReferenceError. See TODO-reverted-bugfixes.md Part 1, bullet 1. The
+          example below is the live capture for this exact case
+          (captured-responses.json, case "happy path (org_code query)").
+        content:
+          application/json:
+            schema:
+              $ref: ../components/public.yaml#/serverErrorResponse
+            example:
+              responseCode: SERVER_ERROR
+              message: Oops! Something Went Wrong.
+              meta:
+                correlation: c1d14b05-0ac1-48a5-a53b-2ef6b9e55dd8
+
+userInvites:
+  get:
+    summary: Get an invited user's prefilled profile data
+    operationId: userInvites
+    tags:
+      - Public APIs
+    security: []
+    description: "This API resolves an org-invite's prefilled user profile data.\n
+      - Endpoint: `/user/v1/public/userInvites`\n
+      - `invitation_key` is a required query parameter.\n
+      - `tenant_code` is a required request body field."
+    parameters:
+      - in: query
+        name: invitation_key
+        required: true
+        schema:
+          type: string
+        description: Invitation key identifying the pending invite.
+        example: 3f9c1a2b6d4e4b8a9f3c1a2b6d4e4b8a
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - tenant_code
+            properties:
+              tenant_code:
+                type: string
+                description: Tenant code the invitation belongs to.
+                example: default_tenant
+    responses:
+      '200':
+        description: OK. Invitee's prefilled profile data.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/public.yaml#/userInvites200Response
+      '406':
+        description: >-
+          Not Acceptable. No matching, still-invited invitation exists for the
+          given `invitation_key` and `tenant_code`.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/public.yaml#/userInvites406Response
+      '500':
+        description: >-
+          Internal Server Error. This currently occurs (instead of a clean
+          400/422) when `invitation_key` or `tenant_code` is missing — this
+          endpoint does not yet validate those fields before using them.
+        x-internal-note: >-
+          validators/v1/public.js has no `userInvites` validator, so a missing
+          `invitation_key` or `tenant_code` reaches services/public.js
+          `userInvites` unchecked and fails deeper in the lookup chain,
+          surfacing as a generic 500 rather than a clean 400/422. See the
+          matching possible-code-bug entry logged in
+          TODO-reverted-bugfixes.md. The example below is the live capture for
+          this exact case (captured-responses.json, case "missing required
+          field (invitation_key) -> 400/404").
+        content:
+          application/json:
+            schema:
+              $ref: ../components/public.yaml#/serverErrorResponse
+            example:
+              responseCode: SERVER_ERROR
+              message: Oops! Something Went Wrong.
+              meta:
+                correlation: 020b41f7-c6bb-40ac-8d02-a27adbd60d5b

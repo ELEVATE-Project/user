@@ -37,11 +37,9 @@ create:
               request_type:
                 type: string
                 description: 'HTTP request type this permission covers. Must be one
-                  of: GET, POST, PATCH, PUT, DELETE. NOTE: validators/v1/permissions.js
-                  validates this as a single string via `.isIn([...])`, not an array,
-                  even though the create/update responses echo it back inside an
-                  array (`result.request_type`). Documented here per the validator;
-                  see gaps.jsonl for this discrepancy.'
+                  of: GET, POST, PATCH, PUT, DELETE. Note: the request accepts a
+                  single string, but the create/update responses echo it back
+                  inside an array (`result.request_type`).'
                 enum:
                   - GET
                   - POST
@@ -98,16 +96,18 @@ create:
                   properties:
                     correlation:
                       type: string
-                    meetingPlatform:
-                      type: string
             examples:
               gap_no_captured_example:
                 summary: 'No captured response available for this status/message
                   (captured-responses.json has no matching entry for permissions
-                  create); schema is types-only (no example values). Previous draft
-                  example values (Id: 40, module: ssss, correlation UUID, meetingPlatform
-                  BBB) were fabricated/copied from a sibling domain and have been
-                  removed.'
+                  create); schema is types-only (no example values).'
+                x-internal-note: >-
+                  Previous draft example values (Id: 40, module: ssss,
+                  correlation UUID) were fabricated/copied from a sibling
+                  domain and have been removed, including a fabricated meta
+                  field matching no real response field anywhere in the
+                  codebase (helpers/responses.js's meta object only ever
+                  sets formsVersion and correlation).
                 value:
                   responseCode: OK
                   message: PERMISSION_CREATED_SUCCESSFULLY
@@ -119,7 +119,6 @@ create:
                       - '<string>'
                   meta:
                     correlation: '<string>'
-                    meetingPlatform: '<string>'
       '400':
         description: Permission could not be created (unique constraint violation
           on `code`).
@@ -149,7 +148,7 @@ update:
   '{id}':
     post:
       summary: Update Permissions
-      description: 'Create permissions for users.
+      description: 'Update permissions for users.
 
         - Endpoint: `/user/v1/permissions/update`.
 
@@ -226,10 +225,13 @@ update:
                 gap_no_captured_example:
                   summary: 'No captured response available for this status/message
                     (captured-responses.json has no matching entry for permissions
-                    update); schema is types-only (no example values). Previous draft
-                    example values (Id: 40, module: ssss, correlation UUID, meetingPlatform
-                    BBB) were fabricated/copied from a sibling domain and have been
-                    removed.'
+                    update); schema is types-only (no example values).'
+                  x-internal-note: >-
+                    Previous draft example values (Id: 40, module: ssss,
+                    correlation UUID) were fabricated/copied from a sibling
+                    domain and have been removed, including a fabricated meta
+                    field matching no real response field anywhere in the
+                    codebase.
                   value:
                     responseCode: OK
                     message: PERMISSION_UPDATED_SUCCESSFULLY
@@ -241,10 +243,8 @@ update:
                         - '<string>'
                     meta:
                       correlation: '<string>'
-                      meetingPlatform: '<string>'
         '400':
-          description: Permission not found for the given id, or permission could
-            not be updated.
+          description: Permission could not be updated.
           content:
             application/json:
               schema:
@@ -258,17 +258,6 @@ update:
                   - responseCode
                   - message
               examples:
-                gap_permission_not_found:
-                  summary: 'Per services/permissions.js update() returns PERMISSION_NOT_FOUND
-                    (via responses.failureResponse(), statusCode 400) when permissionsQueries.findPermissionById(id)
-                    returns falsy. CORRECTION: an earlier pass on this file mistakenly
-                    claimed this was a bare `throw new Error(...)` surfacing as a
-                    generic HTTP 500 — re-checked against the current source and
-                    that is not the case; it is a normal 400 CLIENT_ERROR response.
-                    No captured response available. Shape only.'
-                  value:
-                    responseCode: CLIENT_ERROR
-                    message: PERMISSION_NOT_FOUND
                 gap_permission_not_updated:
                   summary: 'Per services/permissions.js update() returns PERMISSION_NOT_UPDATED
                     when permissionsQueries.updatePermissions(...) returns falsy
@@ -277,6 +266,34 @@ update:
                   value:
                     responseCode: CLIENT_ERROR
                     message: PERMISSION_NOT_UPDATED
+        '500':
+          description: >-
+            Internal Server Error. This is the real, current behavior when no
+            permission exists for the given id — a server-side error is
+            raised instead of a clean 400 in this case.
+          x-internal-note: >-
+            services/permissions.js update(): when
+            permissionsQueries.findPermissionById(id) returns falsy, the code
+            does a bare `throw new Error('PERMISSION_NOT_FOUND')` (not
+            responses.failureResponse()) - surfaces as a generic 500, not a
+            clean 400. See TODO-reverted-bugfixes.md. (A prior "CORRECTION"
+            note here claimed this was confirmed to be a normal 400 - that
+            was itself wrong; direct source confirms the bare throw is still
+            there.)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: SERVER_ERROR
+                  message:
+                    type: string
+                    example: Oops! Something Went Wrong.
+              example:
+                responseCode: SERVER_ERROR
+                message: Oops! Something Went Wrong.
 list:
   get:
     summary: Permissions List
@@ -361,8 +378,6 @@ list:
                   properties:
                     correlation:
                       type: string
-                    meetingPlatform:
-                      type: string
             examples:
               gap_no_captured_example:
                 summary: 'No captured response available for this status/message
@@ -370,10 +385,13 @@ list:
                   endpoint, "GET /mentoring/v1/permissions/list", is explicitly annotated
                   "actual response: route not under this service base path" — it
                   reflects the generic 401 auth-middleware response, not a genuine
-                  200 list body). Schema is types-only. Previous draft example values
-                  (id: 3, code: read_modules_list, count: 1, correlation UUID, meetingPlatform
-                  BBB) were fabricated/copied from a sibling domain and have been
-                  removed.'
+                  200 list body). Schema is types-only.'
+                x-internal-note: >-
+                  Previous draft example values (id: 3, code:
+                  read_modules_list, count: 1, correlation UUID) were
+                  fabricated/copied from a sibling domain and have been
+                  removed, including a fabricated meta field matching no real
+                  response field anywhere in the codebase.
                 value:
                   responseCode: OK
                   message: PERMISSION_FETCHED_SUCCESSFULLY
@@ -390,7 +408,6 @@ list:
                       count: 1
                   meta:
                     correlation: '<string>'
-                    meetingPlatform: '<string>'
       '400':
         description: Permission list is empty.
         content:
@@ -442,7 +459,7 @@ list:
                   (`/mentoring/...` instead of `/user/...`); it is a real, non-fabricated
                   HTTP response, but it demonstrates this service''s shared auth-middleware
                   401 shape rather than a confirmed capture of the real `/user/v1/permissions/list`
-                  endpoint. See gaps.jsonl.'
+                  endpoint.'
                 value:
                   responseCode: UNAUTHORIZED
                   error: []
@@ -454,7 +471,7 @@ delete:
   '{id}':
     delete:
       summary: Delete Permissions
-      description: 'Create permissions for users.
+      description: 'Delete permissions for users.
 
         - Endpoint: `/user/v1/permissions/delete`.
 
@@ -486,27 +503,26 @@ delete:
                     properties:
                       correlation:
                         type: string
-                      meetingPlatform:
-                        type: string
               examples:
                 gap_no_captured_example:
                   summary: 'No captured response available for this status/message
                     (captured-responses.json has no matching entry for permissions
-                    delete); schema is types-only (no example values). Previous
-                    draft example value (correlation UUID, meetingPlatform BBB) was
-                    fabricated/copied from a sibling domain and has been removed.
-                    `result` is genuinely `{}` per services/permissions.js delete()
-                    (`result: {}`), so that part is code-confirmed, not fabricated.'
+                    delete); schema is types-only (no example values). `result` is
+                    genuinely `{}` per services/permissions.js delete()
+                    (`result: {}`), so that part is code-confirmed.'
+                  x-internal-note: >-
+                    Previous draft example value (correlation UUID) was
+                    fabricated/copied from a sibling domain and has been
+                    removed, including a fabricated meta field matching no
+                    real response field anywhere in the codebase.
                   value:
                     responseCode: OK
                     message: PERMISSION_DELETED_SUCCESSFULLY
                     result: {}
                     meta:
                       correlation: '<string>'
-                      meetingPlatform: '<string>'
         '400':
-          description: Permission not found for the given id, or permission could
-            not be deleted.
+          description: Permission could not be deleted.
           content:
             application/json:
               schema:
@@ -520,17 +536,6 @@ delete:
                   - responseCode
                   - message
               examples:
-                gap_permission_not_found:
-                  summary: 'Per services/permissions.js delete() returns PERMISSION_NOT_FOUND
-                    (via responses.failureResponse(), statusCode 400) when permissionsQueries.findPermissionById(id)
-                    returns falsy. CORRECTION: an earlier pass on this file mistakenly
-                    claimed this was a bare `throw new Error(...)` surfacing as a
-                    generic HTTP 500 — re-checked against the current source and
-                    that is not the case; it is a normal 400 CLIENT_ERROR response.
-                    No captured response available. Shape only.'
-                  value:
-                    responseCode: CLIENT_ERROR
-                    message: PERMISSION_NOT_FOUND
                 gap_permission_not_deleted:
                   summary: 'Per services/permissions.js delete() returns PERMISSION_NOT_DELETED
                     when permissionsQueries.deletePermissionById(id) returns falsy
@@ -539,3 +544,31 @@ delete:
                   value:
                     responseCode: CLIENT_ERROR
                     message: PERMISSION_NOT_DELETED
+        '500':
+          description: >-
+            Internal Server Error. This is the real, current behavior when no
+            permission exists for the given id — a server-side error is
+            raised instead of a clean 400 in this case.
+          x-internal-note: >-
+            services/permissions.js delete(): when
+            permissionsQueries.findPermissionById(id) returns falsy, the code
+            does a bare `throw new Error('PERMISSION_NOT_FOUND')` (not
+            responses.failureResponse()) - surfaces as a generic 500, not a
+            clean 400. See TODO-reverted-bugfixes.md. (A prior "CORRECTION"
+            note here claimed this was confirmed to be a normal 400 - that
+            was itself wrong; direct source confirms the bare throw is still
+            there.)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: SERVER_ERROR
+                  message:
+                    type: string
+                    example: Oops! Something Went Wrong.
+              example:
+                responseCode: SERVER_ERROR
+                message: Oops! Something Went Wrong.

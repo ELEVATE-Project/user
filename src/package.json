@@ -18,10 +18,12 @@
 		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand",
 		"db:init": "sequelize-cli db:create || echo 'Database already exists or some issue while creating db, Please check'; sequelize-cli db:migrate",
 		"db:seed:all": "sequelize-cli db:seed:all || (echo 'Seeded data already exists or some issue while seeding the data, Please check' && false)",
-		"docs:bundle": "redocly bundle api-doc/openapi.yaml -o api-doc/api-doc.yaml",
+		"docs:bundle": "redocly bundle api-doc/openapi.yaml -o api-doc/api-doc.yaml && node scripts/api-doc/strip-internal-notes.js",
 		"docs:lint": "redocly lint api-doc/openapi.yaml",
 		"docs:route-inventory": "node scripts/api-doc/route-inventory.js",
 		"docs:check-route-coverage": "node scripts/api-doc/check-route-coverage.js",
+		"docs:build-html": "redocly build-docs api-doc/api-doc.yaml -o api-doc/redoc-static",
+		"docs:build": "npm run docs:lint && npm run docs:bundle && npm run docs:check-route-coverage && npm run docs:build-html",
 		"db:migrate": "sequelize-cli db:migrate"
 	},
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",

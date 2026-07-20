@@ -52,6 +52,27 @@ create:
           application/json:
             schema:
               $ref: ../components/form.yaml#/createForm422Response
+      '401':
+        description: Unauthorized. X-auth-token is either missing or invalid.
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape only, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                  example: UNAUTHORIZED
+                message:
+                  type: string
+                error:
+                  type: array
+                  items:
+                    type: object
+                meta:
+                  type: object
 update:
   '{formId}':
     patch:
@@ -91,8 +112,8 @@ update:
           required: true
           description: Please append a valid form ID to the request URL.
           schema:
-            type: string
-          example: '1'
+            type: integer
+          example: 1
       requestBody:
         content:
           application/json:
@@ -115,6 +136,33 @@ update:
             application/json:
               schema:
                 $ref: ../components/form.yaml#/updateForm400Response
+        '422':
+          description: Unprocessable Entity. Request-body validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/form.yaml#/updateForm422Response
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          x-internal-note: >-
+            No captured example exists for this status on this endpoint -
+            shape only, not a fabricated body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: UNAUTHORIZED
+                  message:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: object
+                  meta:
+                    type: object
 read:
   '{formId}':
     post:
@@ -203,3 +251,24 @@ read:
             application/json:
               schema:
                 $ref: ../components/form.yaml#/readForm400Response
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          x-internal-note: >-
+            No captured example exists for this status on this endpoint -
+            shape only, not a fabricated body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: UNAUTHORIZED
+                  message:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: object
+                  meta:
+                    type: object

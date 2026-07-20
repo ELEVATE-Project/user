@@ -49,6 +49,44 @@ cloudServicesDownloadResponse200:
       example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-image.jpg
     meta:
       type: object
+cloudServicesValidationErrorResponse422:
+  type: object
+  description: >-
+    express-validator validation failure (HTTP 422) — raised when `fileName`
+    is missing or empty.
+  x-internal-note: No captured example exists for this status on this endpoint - shape-only.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+          param:
+            type: string
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: query
+        param: fileName
+        msg: fileName field is empty
+    meta:
+      correlation: 3d8e1f2a-5b6c-4d7e-8f9a-1b2c3d8e1f2a
+    message: Validation failed, Entered data is incorrect!
 cloudServicesUnauthorizedResponse401:
   type: object
   properties:
