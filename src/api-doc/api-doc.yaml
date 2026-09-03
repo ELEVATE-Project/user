@@ -7230,7 +7230,7 @@ components:
       properties:
         name:
           type: string
-          description: Name of the user. Alphabets and spaces only.
+          description: Name of the user. Matching the regex pattern specified in `process.env.NAME_REGEX`.
           example: Nevil Mathew
         email:
           type: string
@@ -8797,7 +8797,7 @@ components:
       properties:
         name:
           type: string
-          description: User's name. Must match ^[A-Za-z ]+$ if provided (letters and spaces only).
+          description: User's name. Matching the regex pattern specified in `process.env.NAME_REGEX`.
           example: John Doe
         about:
           type: string

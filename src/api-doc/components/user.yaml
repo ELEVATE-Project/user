@@ -80,7 +80,7 @@ userCreateUserRequest:
   properties:
     name:
       type: string
-      description: Name of the user
+      description: Name of the user, Matching the regex pattern specified in `process.env.NAME_REGEX`
       example: John Deo
     email:
       type: string

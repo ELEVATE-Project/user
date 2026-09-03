@@ -24,7 +24,7 @@ createUserRequest:
   properties:
     name:
       type: string
-      description: Name of the user. Alphabets and spaces only.
+      description: Name of the user. Matching the regex pattern specified in `process.env.NAME_REGEX`.
       example: Nevil Mathew
     email:
       type: string
