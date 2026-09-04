@@ -1,0 +1,685 @@
+createEntityTypeRequest:
+  type: object
+  description: Request payload for creating a new entity type.
+  required:
+    - value
+    - label
+    - data_type
+    - model_names
+  properties:
+    value:
+      type: string
+      description: Unique identifier for the entity type. Must not contain spaces.
+      example: ln
+    label:
+      type: string
+      description: Descriptive label for the entity type.
+      example: Languages
+    data_type:
+      type: string
+      description: Data type of the entity type value (e.g. STRING, ARRAY[STRING]).
+      example: STRING
+    model_names:
+      type: array
+      description: One or more model names this entity type applies to. Must be a non-empty array.
+      items:
+        type: string
+      example:
+        - User
+    allow_filtering:
+      type: boolean
+      description: >-
+        Not allowed on create. This field must be omitted; sending any
+        truthy value fails validation.
+      x-internal-note: >-
+        The validator requires this field to be empty (`isEmpty()`) if
+        present.
+      example: true
+updateEntityTypeRequest:
+  type: object
+  description: Request payload for updating an entity type.
+  required:
+    - data_type
+    - model_names
+  properties:
+    value:
+      type: string
+      description: Unique identifier for the entity type. Optional on update.
+      example: ln
+    label:
+      type: string
+      description: Descriptive label for the entity type. Optional on update.
+      example: Languages
+    status:
+      type: string
+      description: Status of the entity type. Optional on update.
+      example: ACTIVE
+    data_type:
+      type: string
+      description: Data type of the entity type value.
+      example: STRING
+    model_names:
+      type: array
+      description: >-
+        One or more model names this entity type applies to. Must be a
+        non-empty array, and each item must be one of the currently
+        supported model names.
+      x-internal-note: >-
+        validators/v1/entity-type.js (update): `req.checkBody('model_names.*')`
+        and `isIn(['User']).withMessage(...)` are written on separate lines
+        with no `.` connecting them - `isIn` is called as a bare, unchained
+        identifier, not a method on the checkBody() chain, so this throws a
+        ReferenceError (`isIn is not defined`) at runtime rather than
+        enforcing the allow-list. Confirmed by direct read; see
+        TODO-reverted-bugfixes.md Part 2, bullet 1. (A prior "CORRECTION"
+        note here claimed this chain was intact - it was itself wrong; it
+        misquoted the source with a `.` that isn't actually there. The
+        create() operation's equivalent check, a few lines up in the same
+        file, IS correctly chained and unaffected.)
+      items:
+        type: string
+      example:
+        - User
+createEntityType201Response:
+  type: object
+  description: Entity type created successfully.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Entity type created successfully.
+    result:
+      type: object
+      properties:
+        status:
+          type: string
+        allow_filtering:
+          type: boolean
+        allow_custom_entities:
+          type: boolean
+        has_entities:
+          type: boolean
+        required:
+          type: boolean
+        regex:
+          type: string
+          nullable: true
+        external_entity_type:
+          type: boolean
+        id:
+          type: integer
+        value:
+          type: string
+        label:
+          type: string
+        data_type:
+          type: string
+        model_names:
+          type: array
+          items:
+            type: string
+        created_by:
+          type: integer
+        updated_by:
+          type: integer
+        organization_code:
+          type: string
+        organization_id:
+          type: integer
+        tenant_code:
+          type: string
+        updated_at:
+          type: string
+        created_at:
+          type: string
+        parent_id:
+          type: integer
+          nullable: true
+        meta:
+          type: object
+          nullable: true
+        deleted_at:
+          type: string
+          nullable: true
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              type:
+                type: string
+              version:
+                type: integer
+        correlation:
+          type: string
+  example:
+    responseCode: OK
+    message: Entity type created successfully.
+    result:
+      status: ACTIVE
+      allow_filtering: false
+      allow_custom_entities: true
+      has_entities: true
+      required: false
+      regex: null
+      external_entity_type: false
+      id: 26
+      value: lang_utbgvs
+      label: Replay Test Entity Type
+      data_type: STRING
+      model_names:
+        - User
+      created_by: 23
+      updated_by: 23
+      organization_code: default_code
+      organization_id: 1
+      tenant_code: default
+      updated_at: '2026-07-15T10:56:23.972Z'
+      created_at: '2026-07-15T10:56:23.972Z'
+      parent_id: null
+      meta: null
+      deleted_at: null
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: a6540689-f5db-445c-bc80-5d4149d9011d
+updateEntityType422Response:
+  type: object
+  description: Validation failed - request body did not pass express-validator checks.
+  x-internal-note: >-
+    No live captured example exists for this case; shape follows the same
+    pattern as createEntityType422Response, restricted to update's own
+    required fields (data_type, model_names).
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+          param:
+            type: string
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: body
+        param: data_type
+        msg: data_type field is empty
+      - location: body
+        param: model_names
+        msg: model_names must be an array with at least one element
+    meta:
+      correlation: 1a2b3c4d-5e6f-4a7b-8c9d-1a2b3c4d5e6f
+    message: Validation failed, Entered data is incorrect!
+
+deleteEntityType422Response:
+  type: object
+  description: Validation failed - the `id` path parameter is missing/invalid.
+  x-internal-note: No live captured example exists for this case - shape-only.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+            example: params
+          param:
+            type: string
+            example: id
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: params
+        param: id
+        msg: id param is empty
+    meta:
+      correlation: 2b3c4d5e-6f7a-4b8c-9d1a-2b3c4d5e6f7a
+    message: Validation failed, Entered data is incorrect!
+
+createEntityType422Response:
+  type: object
+  description: Validation failed - request body did not pass express-validator checks.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+          param:
+            type: string
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: body
+        param: value
+        msg: value field is empty
+      - location: body
+        param: value
+        msg: value is invalid, must not contain spaces
+      - location: body
+        param: label
+        msg: label field is empty
+      - location: body
+        param: label
+        msg: label is invalid
+      - location: body
+        param: data_type
+        msg: data_type field is empty
+      - location: body
+        param: data_type
+        msg: data_type is invalid, must not contain spaces
+      - location: body
+        param: model_names
+        msg: Invalid value
+      - location: body
+        param: model_names
+        msg: model_names must be an array with at least one element
+    meta:
+      correlation: b4b4073d-1625-40cb-ac32-fe3e707a75e9
+    message: Validation failed, Entered data is incorrect!
+createEntityType400Response:
+  type: object
+  description: Bad Request. Returned when an entity type with the given value already exists.
+  x-internal-note: >-
+    Raised when the DB throws a UniqueConstraintError. No live captured
+    response body exists for this case in captured-responses.json - only
+    the 201 and 422 cases for this endpoint were captured. The properties
+    below reflect the generic failureResponse envelope shared by every
+    other captured error in this domain, but the exact field values for
+    this specific case are NOT confirmed and must not be treated as real.
+    See gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      x-internal-note: 'Not confirmed for this case. Other captured errors use CLIENT_ERROR.'
+    error:
+      type: array
+      items:
+        type: object
+      x-internal-note: 'Not confirmed for this case.'
+    message:
+      type: string
+      x-internal-note: >-
+        Not confirmed for this case. The service passes the message key
+        'ENTITY_TYPE_ALREADY_EXISTS' to responses.failureResponse(); the
+        localized string text actually returned was never captured.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+      x-internal-note: 'Not confirmed for this case.'
+readEntityType200Response:
+  description: >-
+    Entity types fetched successfully. The response shape depends on
+    whether a `value` is included in the request body: when omitted, a flat
+    array of system entity types is returned under `result`; when a
+    `value` is sent, matching entity types are returned nested under
+    `result.entity_types`.
+  x-internal-note: >-
+    Branches on the controller's `req.body.value` check
+    (controllers/v1/entity-type.js): no `value` -> readAllSystemEntityTypes
+    (flat array under `result`); `value` sent -> readUserEntityTypes
+    (`result.entity_types`). Only the no-`value` (system) branch was
+    captured live in captured-responses.json; the `entity_types`-wrapped
+    branch was modeled here as a second oneOf member from reading
+    services/entityType.js only, with no confirmed example.
+  oneOf:
+    - $ref: '#/readEntityTypeSystemResponse'
+    - $ref: '#/readEntityTypeUserResponse'
+readEntityTypeSystemResponse:
+  type: object
+  description: Response returned when no `value` is sent in the request body.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Entity type fetched successfully
+    result:
+      type: array
+      items:
+        type: object
+        properties:
+          value:
+            type: string
+          label:
+            type: string
+          id:
+            type: integer
+          organization_code:
+            type: string
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              type:
+                type: string
+              version:
+                type: integer
+        correlation:
+          type: string
+  example:
+    responseCode: OK
+    message: Entity type fetched successfully
+    result:
+      - value: preferred_language
+        label: Preferred Language
+        id: 1
+        organization_code: default_code
+      - value: phone_code
+        label: Phone Code
+        id: 2
+        organization_code: default_code
+      - value: name
+        label: Name
+        id: 3
+        organization_code: default_code
+      - value: languages
+        label: Languages
+        id: 4
+        organization_code: default_code
+      - value: location
+        label: Location
+        id: 5
+        organization_code: default_code
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: 77d8acc0-7f10-4447-be5a-68bf46bac384
+readEntityTypeUserResponse:
+  type: object
+  description: >-
+    Response returned when a `value` is sent in the request body. The
+    payload is nested under `result.entity_types` instead of a flat
+    `result` array.
+  x-internal-note: >-
+    Never captured live. Branch taken when `value` is sent in the request
+    body (readUserEntityTypes). The only fact confirmed by reading
+    services/entityType.js is that the payload is nested under
+    `result.entity_types` instead of a flat `result` array; the shape of
+    each entity inside that array comes from
+    entityTypeQueries.findUserEntityTypesAndEntities, a database/query-layer
+    file that is out of scope for this pass, so per-item fields are NOT
+    enumerated here. Do not treat this as verified.
+  properties:
+    responseCode:
+      type: string
+      x-internal-note: 'Not confirmed. Other captured 200s in this domain use OK.'
+    message:
+      type: string
+      x-internal-note: 'Not confirmed.'
+    result:
+      type: object
+      x-internal-note: 'Not confirmed.'
+      properties:
+        entity_types:
+          type: array
+          items:
+            type: object
+          x-internal-note: 'Item shape not confirmed (query-layer file out of scope).'
+readEntityType400Response:
+  type: object
+  description: Bad Request. Returned when no entity types match the request.
+  x-internal-note: >-
+    Entity type not found (readAllSystemEntityTypes branch, when the
+    pruned result set is empty). No live captured response exists for the
+    read endpoint's 400 case specifically - captured-responses.json only
+    has a 200 entry for `POST /user/v1/entity-type/read`. The same message
+    key (ENTITY_TYPE_NOT_FOUND) IS captured verbatim as "Entity type not
+    found." for the update and delete endpoints, so the envelope shape
+    below is a reasonable match, but this exact endpoint/status pairing
+    was never captured and must not be treated as confirmed. See
+    gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      x-internal-note: 'Not confirmed for this endpoint (confirmed as CLIENT_ERROR elsewhere for the same message key).'
+    error:
+      type: array
+      items:
+        type: object
+      x-internal-note: 'Not confirmed for this endpoint (confirmed as [] elsewhere for the same message key).'
+    message:
+      type: string
+      x-internal-note: 'Not confirmed for this endpoint (confirmed as "Entity type not found." elsewhere for the same message key).'
+updateEntityType202Response:
+  type: object
+  description: Entity type updated successfully.
+  x-internal-note: >-
+    No live captured response body exists for this success case in
+    captured-responses.json - only the 400 (not-found) case for this
+    endpoint was captured. The field-level examples below are NOT
+    confirmed; only the envelope (responseCode/message/result) is inferred
+    from the successResponse() call shape used consistently elsewhere in
+    this domain. See gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      x-internal-note: 'Not confirmed for this case.'
+    message:
+      type: string
+      x-internal-note: >-
+        Not confirmed. Service passes message key
+        'ENTITY_TYPE_UPDATED_SUCCESSFULLY' to responses.successResponse().
+    result:
+      type: object
+      description: The updated entity type record.
+      x-internal-note: >-
+        Not confirmed. Service returns the raw updated row from
+        entityTypeQueries.updateOneEntityType (a database/query-layer file
+        out of scope for this pass), so per-field shape/values are not
+        enumerated here beyond what create's captured 201 result implies
+        the row generally contains.
+      properties:
+        id:
+          type: integer
+        value:
+          type: string
+        label:
+          type: string
+        status:
+          type: string
+        data_type:
+          type: string
+        allow_filtering:
+          type: boolean
+        has_entities:
+          type: boolean
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          x-internal-note: 'Not confirmed for this case.'
+updateEntityType400Response:
+  description: >-
+    Bad Request. Returned when the entity type being updated is not found,
+    or has already been deleted.
+  x-internal-note: >-
+    Two distinct failure branches in services/entityType.js#update both
+    return 400: the updateCount===0 branch (ENTITY_TYPE_NOT_FOUND) and the
+    UniqueConstraintError catch (ENTITY_TYPE_ALREADY_DELETED). Only the
+    not-found branch was captured live.
+  oneOf:
+    - $ref: '#/updateEntityTypeNotFound400Response'
+    - $ref: '#/updateEntityTypeAlreadyDeleted400Response'
+updateEntityTypeNotFound400Response:
+  type: object
+  description: Bad Request. Returned when the entity type to update is not found.
+  x-internal-note: 'Captured live (updateCount === 0).'
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 136ef0fa-786a-4341-ab71-be6c80abcaf1
+    message:
+      type: string
+      example: Entity type not found.
+  example:
+    responseCode: CLIENT_ERROR
+    error: []
+    meta:
+      correlation: 136ef0fa-786a-4341-ab71-be6c80abcaf1
+    message: Entity type not found.
+updateEntityTypeAlreadyDeleted400Response:
+  type: object
+  description: Bad Request. Returned when the entity type being updated has already been deleted.
+  x-internal-note: >-
+    Never captured live. Raised when
+    entityTypeQueries.updateOneEntityType throws a UniqueConstraintError.
+    Envelope shape assumed consistent with other failureResponse() calls
+    in this domain; exact message text and fields are NOT confirmed. See
+    gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      x-internal-note: 'Not confirmed for this case.'
+    error:
+      type: array
+      items:
+        type: object
+      x-internal-note: 'Not confirmed for this case.'
+    message:
+      type: string
+      x-internal-note: >-
+        Not confirmed. Service passes message key
+        'ENTITY_TYPE_ALREADY_DELETED' to responses.failureResponse().
+deleteEntityType202Response:
+  type: object
+  description: Entity type deleted successfully.
+  x-internal-note: >-
+    No live captured response body exists for this success case -
+    captured-responses.json only has a 400 entry for the delete endpoint.
+    Envelope shape assumed consistent with other successResponse() calls
+    with no `result` payload in this domain; exact message text is NOT
+    confirmed. See gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+      x-internal-note: 'Not confirmed for this case.'
+    message:
+      type: string
+      x-internal-note: >-
+        Not confirmed. Service passes message key
+        'ENTITY_TYPE_DELETED_SUCCESSFULLY' to responses.successResponse().
+deleteEntityType400Response:
+  type: object
+  description: Entity type not found.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: string
+      example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: cd067758-b5c9-462a-8f64-01121aa3db8e
+    message:
+      type: string
+      example: Entity type not found.
+  example:
+    responseCode: CLIENT_ERROR
+    error: []
+    meta:
+      correlation: cd067758-b5c9-462a-8f64-01121aa3db8e
+    message: Entity type not found.

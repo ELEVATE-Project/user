@@ -1,0 +1,250 @@
+featureListItem:
+  type: object
+  properties:
+    code:
+      type: string
+    label:
+      type: string
+    description:
+      type: string
+      nullable: true
+    icon:
+      type: string
+      nullable: true
+    meta:
+      type: object
+      nullable: true
+    display_order:
+      type: integer
+
+featureList200Response:
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/featureListItem'
+        count:
+          type: integer
+    meta:
+      type: object
+
+featureCreateRequest:
+  type: object
+  # create branch (POST /feature/update with no path param): validator requires
+  # label, code and display_order (conditionalNotes: code & display_order are
+  # required only inside the `if (!isUpdate)` create branch).
+  required:
+    - label
+    - code
+    - display_order
+  properties:
+    label:
+      type: string
+      description: Human-readable feature label. Must contain only letters.
+      x-internal-note: Validated via regex ^[A-Za-z]*$ combined with notEmpty().
+    code:
+      type: string
+      description: Unique feature code.
+    display_order:
+      type: string
+      pattern: '^\d+$'
+      description: >-
+        Sort order used when listing features. Must be provided as a
+        non-empty string of digits when creating a feature.
+      x-internal-note: Validated with matches(/^\d+$/).
+    icon:
+      type: string
+      nullable: true
+      description: Optional icon path. Not enforced by the validator; present on the persisted model.
+    description:
+      type: string
+      nullable: true
+      description: Optional description. Not enforced by the validator; present on the persisted model.
+    meta:
+      type: object
+      nullable: true
+      description: Optional metadata. Not enforced by the validator; present on the persisted model.
+
+featureUpdateRequest:
+  type: object
+  # update branch (POST /feature/update/{id}): only `label` is required.
+  # `code` and `display_order` are NOT required here — their required:true in
+  # validator-fields.json applies only to the create (`!isUpdate`) branch.
+  required:
+    - label
+  properties:
+    label:
+      type: string
+      description: Human-readable feature label. Must contain only letters.
+      x-internal-note: Validated via regex ^[A-Za-z]*$ combined with notEmpty().
+    display_order:
+      type: string
+      pattern: '^\d+$'
+      description: >-
+        Optional. Sort order used when listing features. Must be a
+        non-empty string of digits.
+      x-internal-note: Validated with matches(/^\d+$/).
+    icon:
+      type: string
+      nullable: true
+    description:
+      type: string
+      nullable: true
+    meta:
+      type: object
+      nullable: true
+  # NOTE: `code` is intentionally NOT listed as a property here. It is
+  # stripped from the request body by filterRequestBody with the
+  # feature.update blacklist (constants/blacklistConfig.js: update includes
+  # 'code') before the service layer ever sees it — a client-supplied `code`
+  # is silently dropped, not merely optional/ignored-if-absent. The feature's
+  # code cannot be changed via this endpoint.
+
+featureCreate201Response:
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        display_order:
+          type: integer
+        created_by:
+          type: integer
+          nullable: true
+        updated_by:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        icon:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        meta:
+          type: object
+          nullable: true
+        deleted_at:
+          type: string
+          nullable: true
+    meta:
+      type: object
+
+featureDelete200Response:
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items: {}
+    meta:
+      type: object
+
+# Shared validation-failure envelope (express-validator middleware).
+featureValidation422Response:
+  type: object
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+          param:
+            type: string
+          msg:
+            type: string
+          value: {}
+    meta:
+      type: object
+    message:
+      type: string
+
+# Shared "feature not found" envelope. Used with a 400 example (update) and a
+# 404 example (delete) — identical body shape, different HTTP status/prose.
+featureNotFoundResponse:
+  type: object
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    meta:
+      type: object
+    message:
+      type: string
+
+# services/feature.js#create catches a Sequelize UniqueConstraintError (thrown
+# when a feature with the same `code` already exists) and responds 400 with
+# message FEATURE_CREATED_SUCCESSFULLY's sibling error key FEATURE_ALREADY_EXISTS.
+# Never captured live — see gaps.jsonl. Body shape inferred only from the
+# shared failureResponse envelope shape (responseCode/error/meta/message),
+# which IS consistently observed across every other captured failure response
+# in this domain; the `message` text itself is the literal i18n key since we
+# have no captured/translated example to confirm the rendered string.
+featureAlreadyExists400Response:
+  type: object
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    meta:
+      type: object
+    message:
+      type: string
+
+# services/feature.js#update responds 200 with message FEATURE_UPDATED_SUCCESSFULLY
+# and result: updatedFeature (the raw Sequelize update result — an array in the
+# form [affectedCount] for a bulk `update({ code }, bodyData)` call, per
+# Sequelize's default `individualHooks: false` update return shape).
+# Never captured live — see gaps.jsonl. `result` shape below is a
+# best-effort structural guess and must not be treated as confirmed; do not
+# rely on it for client integration until a live example is captured.
+featureUpdate200Response:
+  type: object
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items: {}
+      description: >-
+        Result of the update operation.
+      x-internal-note: >-
+        Shape unconfirmed. Likely the raw Sequelize bulk-update return
+        value (e.g. [affectedCount]) rather than the updated feature record —
+        see services/feature.js#update. Never captured live — see gaps.jsonl.
+        Treat as a best-effort structural guess, not confirmed for client
+        integration.
+    meta:
+      type: object

@@ -1,0 +1,1165 @@
+# -----------------------------------------------------------------------------
+# NOTE on gaps: several response schemas below are "shape-only" (types only,
+# no example values) because src/scripts/api-doc/captured-responses.json has
+# no captured example for that status code/message on this endpoint. Per the
+# task rules for this pass, no response body is fabricated for those cases -
+# see src/scripts/api-doc/gaps.jsonl (domain: organization) for the full list.
+# Message keys quoted in descriptions (e.g. ORGANIZATION_ALREADY_EXISTS) are
+# the literal i18n keys used by responses.failureResponse/successResponse in
+# controllers/v1/organization.js and services/organization.js - they document
+# which code path produces the response, not a verified/captured body.
+# -----------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Request schemas
+# ---------------------------------------------------------------------------
+createOrganizationRequest:
+  type: object
+  description: Request payload for creating an organization.
+  required:
+    - name
+    - code
+    - description
+    - tenant_code
+    - domains
+  properties:
+    name:
+      type: string
+      example: MentorEd
+      description: The name of the organization.
+    code:
+      type: string
+      example: mentor112
+      description: A unique code representing the organization. Only lowercase alphanumeric characters
+        are allowed.
+    description:
+      type: string
+      example: testing
+      description: A brief description of the organization.
+    tenant_code:
+      type: string
+      example: default
+      description: Code of the tenant the organization belongs to.
+    domains:
+      type: array
+      items:
+        type: string
+      example:
+        - example.com
+      description: List of email domains associated with the organization.
+    registration_codes:
+      type: array
+      items:
+        type: string
+      example: []
+      description: Optional list of registration codes for the organization.
+    admin_email:
+      type: string
+      example: admin@example.com
+      description: Optional email of the user to be assigned as the organization admin.
+      x-internal-note: >-
+        Not enforced by validators/v1/organization.js (no explicit check) -
+        purely a service-layer optional field.
+updateOrganizationRequest:
+  type: object
+  description: 'Request payload for updating an organization. The organization ``id`` is supplied as a
+    path parameter. All body fields are optional; only the provided fields are updated.'
+  properties:
+    name:
+      type: string
+      example: MentorEd
+      description: The updated name of the organization.
+    description:
+      type: string
+      example: testing
+      description: The updated description of the organization.
+    related_orgs:
+      type: array
+      items:
+        type: integer
+      example:
+        - 2
+      description: 'List of related organization IDs. If the caller is an org-admin/tenant-admin
+        updating an organization other than their own and supplies this field, the request is
+        rejected with a 400 error.'
+      x-internal-note: >-
+        Not enforced by validators/v1/organization.js (no explicit check
+        there); gated instead in controllers/v1/organization.js#update by a
+        runtime role/ownership comparison (CONTACT_ADMIN_RELATED_ORGANIZATIONS,
+        400). This is a runtime-config/role-dependent rule, not a pure
+        body-shape constraint, so it is documented here in prose rather than
+        forced into the schema.
+addRegistrationCodeRequest:
+  type: object
+  description: 'Request payload for adding registration codes to an organization. The organization
+    ``id`` (organization code) is supplied as a path parameter.'
+  required:
+    - registration_codes
+  properties:
+    registration_codes:
+      type: array
+      items:
+        type: string
+      example:
+        - reg123
+      description: List of registration codes to add. Must be a non-empty array.
+    tenant_code:
+      type: string
+      example: default
+      description: 'Tenant code. Conditionally required: only when the caller is a platform admin. For
+        org-admins the tenant code is derived from the auth token instead. When absent for an admin
+        caller, the request fails.'
+      x-internal-note: >-
+        See validators/v1/organization.js addRegistrationCode, line 97-99.
+        Failure case is TENANT_NOT_FOUND
+        (controllers/v1/organization.js#addRegistrationCode).
+removeRegistrationCodeRequest:
+  type: object
+  description: 'Request payload for removing registration codes from an organization. The organization
+    ``id`` is supplied as a path parameter.'
+  required:
+    - registration_codes
+  properties:
+    registration_codes:
+      type: array
+      items:
+        type: string
+      example:
+        - reg123
+      description: List of registration codes to remove. Must be a non-empty array.
+    tenant_code:
+      type: string
+      example: default
+      description: 'Tenant code. Conditionally required: only when the caller is a platform admin. For
+        org-admins the tenant code is derived from the auth token instead. When absent for an admin
+        caller, the request fails.'
+      x-internal-note: >-
+        See validators/v1/organization.js removeRegistrationCode, line
+        123-125. Failure case is TENANT_NOT_FOUND
+        (controllers/v1/organization.js#removeRegistrationCode).
+addRelatedOrgRequest:
+  type: object
+  description: Request payload for adding related organizations. The `related_orgs` field is optional
+    and defaults to an empty list if omitted.
+  x-internal-note: >-
+    No entry exists for this operation in validators/v1/organization.js (only
+    create, update, requestOrgRole, read, addRegistrationCode,
+    removeRegistrationCode are validated) - the field is optional at the HTTP
+    layer and defaults to an empty array in
+    controllers/v1/organization.js#addRelatedOrg (req.body.related_orgs || []).
+  properties:
+    related_orgs:
+      type: array
+      items:
+        type: integer
+      example:
+        - 2
+      description: List of related organization IDs to associate.
+removeRelatedOrgRequest:
+  type: object
+  description: Request payload for removing related organizations. The `related_orgs` field is
+    optional and defaults to an empty list if omitted.
+  x-internal-note: >-
+    No entry exists for this operation in validators/v1/organization.js - the
+    field is optional at the HTTP layer and defaults to an empty array in
+    controllers/v1/organization.js#removeRelatedOrg (req.body.related_orgs || []).
+  properties:
+    related_orgs:
+      type: array
+      items:
+        type: integer
+      example:
+        - 2
+      description: List of related organization IDs to remove.
+requestOrgRoleRequest:
+  type: object
+  description: Request payload for requesting a role within an organization.
+  required:
+    - role
+    - form_data
+  properties:
+    role:
+      type: integer
+      example: 2
+      description: The specific role id being requested.
+    form_data:
+      type: object
+      description: 'Answers to the organization-specific role-request form.'
+      properties:
+        about:
+          type: string
+          pattern: '^[a-zA-Z0-9\-.,\s]+$'
+          example: I would like to mentor.
+          description: Optional free-text field describing the requester.
+          x-internal-note: 'Validated in validators/v1/organization.js requestOrgRole.'
+        experience:
+          type: string
+          pattern: '^[0-9]+$'
+          example: '5'
+          description: Optional numeric-string field (validated with isNumeric()) describing years of
+            experience.
+      example:
+        about: I would like to mentor.
+        experience: '5'
+
+# ---------------------------------------------------------------------------
+# Shared: authorization failure, common to several organization endpoints
+# that perform the ADMIN_ROLE / ORG_ADMIN_ROLE / TENANT_ADMIN_ROLE check.
+# GAP: no captured example exists anywhere in captured-responses.json for the
+# USER_IS_NOT_A_ADMIN message on any organization endpoint - shape-only.
+# ---------------------------------------------------------------------------
+organizationNotAdminResponse:
+  type: object
+  description: Returned when the caller's roles do not satisfy the required admin check (statusCode 400).
+  x-internal-note: >-
+    utilsHelper.validateRoleAccess in controllers/v1/organization.js. Message
+    key: USER_IS_NOT_A_ADMIN. No captured example - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+
+# ---------------------------------------------------------------------------
+# create  (POST /user/v1/organization/create)
+# ---------------------------------------------------------------------------
+createOrganization201Response:
+  type: object
+  description: Organization created successfully (statusCode 201).
+  x-internal-note: >-
+    Message key ORGANIZATION_CREATED_SUCCESSFULLY per @generics/http-status. No
+    success body was captured during live replay for this endpoint - see
+    gaps.jsonl. Shape below is derived only from the responses.successResponse
+    call shape and organizationQueries.create() usage in
+    services/organization.js, NOT from a captured example - no example values
+    are given.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+      description: The created organization record.
+      x-internal-note: Shape not verified against a captured response.
+createOrganization400UniqueConstraintResponse:
+  type: object
+  description: The organization's code and tenant_code combination must be unique (statusCode 400).
+  x-internal-note: 'Message key ORG_UNIQUE_CONSTRAIN_ERROR. No captured example - shape-only.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+createOrganization400RegCodeErrorResponse:
+  type: object
+  description: The supplied registration_code could not be processed during organization creation
+    (statusCode 400).
+  x-internal-note: >-
+    Raised when error.message === "registration_code" during create. Message
+    key REG_CODE_ERROR. No captured example - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+createOrganization401Response:
+  type: object
+  description: Caller lacks the required permissions.
+  x-internal-note: >-
+    Captured at a layer above the controller's own USER_IS_NOT_A_ADMIN check -
+    verbatim captured example.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+  example:
+    responseCode: UNAUTHORIZED
+    error: []
+    meta:
+      correlation: e7b6746f-b747-4466-837e-c97e52fd7b5a
+    message: You do not have the required permissions to access this resource. Please contact your administrator
+      for assistance.
+createOrganization406AlreadyExistsResponse:
+  type: object
+  description: An organization with the same code and tenant_code already exists (statusCode 406).
+  x-internal-note: 'Message key ORGANIZATION_ALREADY_EXISTS. No captured example - shape-only.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+createOrganization406RoleNotFoundResponse:
+  type: object
+  description: The organization admin role could not be resolved when admin_email was provided
+    (statusCode 406).
+  x-internal-note: 'Message key ROLE_NOT_FOUND. No captured example - shape-only.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+createOrganization406CredentialErrorResponse:
+  type: object
+  description: The credential record for the invited organization admin (admin_email) could not be
+    created (statusCode 406).
+  x-internal-note: >-
+    Raised in services/organization.js#create. In the source code the
+    `message` field is set directly to the failed UserCredentialQueries.create()
+    result rather than to a string key - this looks like a code-level
+    bug/oddity in services/organization.js, documented here as observed rather
+    than corrected. No captured example - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      description: Error detail describing the credential-creation failure.
+      x-internal-note: >-
+        In code this is assigned the raw (failed) user-credential object, not
+        a string message key.
+createOrganization422Response:
+  type: object
+  description: Request-body validation failed.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+          param:
+            type: string
+          msg:
+            type: string
+    meta:
+      type: object
+    message:
+      type: string
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: body
+        param: code
+        msg: code field is empty
+      - location: body
+        param: code
+        msg: code is invalid. Only lowercase alphanumeric characters allowed
+      - location: body
+        param: tenant_code
+        msg: tenant_code field is empty
+      - location: body
+        param: description
+        msg: description field is empty
+      - location: body
+        param: description
+        msg: invalid description
+      - location: body
+        param: domains
+        msg: domains field is empty
+    meta:
+      correlation: 3005e648-4d08-48b4-8957-dd1e8c78f0b6
+    message: Validation failed, Entered data is incorrect!
+createOrganization500Response:
+  type: object
+  description: Unexpected server error.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    meta:
+      type: object
+  example:
+    responseCode: SERVER_ERROR
+    message: Oops! Something Went Wrong.
+    meta:
+      correlation: 2df8aac9-6822-46e7-92a5-5ddbff62ffe1
+
+# ---------------------------------------------------------------------------
+# update  (PATCH /user/v1/organization/update/{id})
+# ---------------------------------------------------------------------------
+updateOrganization202Response:
+  type: object
+  description: Organization updated successfully (statusCode 202).
+  x-internal-note: Message key ORGANIZATION_UPDATED_SUCCESSFULLY.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: Organization updated successfully
+    result: []
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: 994eab62-49f2-4827-a484-e4f2bc505ffc
+updateOrganization400Response:
+  type: object
+  description: 'Caller not authorized to update this organization. This covers three cases: the caller
+    has no admin/org-admin/tenant-admin role; an org-admin/tenant-admin is updating an organization
+    other than their own; or the same case where the request additionally includes related_orgs. All
+    three return statusCode 400.'
+  x-internal-note: >-
+    Message keys, per the runtime role/ownership check in
+    controllers/v1/organization.js#update: USER_IS_NOT_A_ADMIN,
+    USER_DOES_NOT_HAVE_ACCESS, CONTACT_ADMIN_RELATED_ORGANIZATIONS. No
+    captured example for any of the three - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+updateOrganization400UniqueConstraintResponse:
+  type: object
+  description: The updated organization code and tenant_code combination must be unique (statusCode
+    400).
+  x-internal-note: 'Message key ORG_UNIQUE_CONSTRAIN_ERROR. No captured example - shape-only.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+updateOrganization406Response:
+  type: object
+  description: Organization not found (statusCode 406).
+  x-internal-note: Message key ORGANIZATION_NOT_FOUND.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+  example:
+    responseCode: CLIENT_ERROR
+    error: []
+    meta:
+      correlation: 2e2486fb-df26-4323-86af-31455d40a786
+    message: Organization not found.
+
+# ---------------------------------------------------------------------------
+# list  (GET or POST /user/v1/organization/list)
+# services/organization.js#list has three distinct response-body shapes
+# depending on which query/body branch is taken - modeled as oneOf.
+# ---------------------------------------------------------------------------
+organizationListPaginatedResult:
+  type: object
+  description: Paginated listing of organizations, returned when neither tenant_code nor
+    organizationIds is supplied.
+  x-internal-note: >-
+    Default branch - organizationQueries.listOrganizations(pageNo, pageSize,
+    searchText). Verbatim captured example.
+  properties:
+    count:
+      type: integer
+    data:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          code:
+            type: string
+          description:
+            type: string
+organizationListArrayResult:
+  type: array
+  description: A plain array of organization records (id, name, code, description), returned when
+    tenant_code or organizationIds is supplied instead of pagination parameters.
+  x-internal-note: >-
+    Covers the tenant_code-query-param branch and the body.organizationIds
+    branch of services/organization.js#list. No captured example exists for
+    either of these two branches - shape-only, no example values.
+  items:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      code:
+        type: string
+      description:
+        type: string
+organizationList200Response:
+  type: object
+  description: Organization list fetched successfully (statusCode 200). The `result` shape depends on
+    which query parameters were supplied - see organizationListPaginatedResult vs
+    organizationListArrayResult.
+  x-internal-note: >-
+    Message key ORGANIZATION_FETCHED_SUCCESSFULLY. Shape varies by branch of
+    services/organization.js#list.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      oneOf:
+        - $ref: '#/organizationListPaginatedResult'
+        - $ref: '#/organizationListArrayResult'
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: Organization fetched successfully.
+    result:
+      count: 6
+      data:
+        - id: 3
+          name: Default
+          code: default_code
+          description: ''
+        - id: 5
+          name: Default
+          code: default_code
+          description: ''
+        - id: 1
+          name: Default Organization
+          code: default_code
+          description: Updated via replay script
+        - id: 2
+          name: Throwaway Org
+          code: throworg3t56r761kt
+          description: temp
+        - id: 4
+          name: Throwaway Org
+          code: throworg3t6fcumbgj
+          description: temp
+        - id: 6
+          name: Throwaway Org
+          code: throworg3t7nn1r1do
+          description: temp
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: 54883149-9149-4563-b6ec-e403eff3e151
+
+# ---------------------------------------------------------------------------
+# requestOrgRole  (POST /user/v1/organization/requestOrgRole)
+# ---------------------------------------------------------------------------
+requestOrgRole201Response:
+  type: object
+  description: 'Role request submitted, or an equivalent request was already approved (statusCode
+    201). This covers two cases: a new request was created (or re-created after a prior rejection),
+    or an existing request for this role was already accepted.'
+  x-internal-note: >-
+    Message key is ROLE_CHANGE_REQUESTED (new/re-created request) or
+    ROLE_CHANGE_APPROVED (already accepted). Captured example below is for the
+    ROLE_CHANGE_REQUESTED case; no captured example exists for
+    ROLE_CHANGE_APPROVED, but it reuses the same successResponse shape.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: Admin has received your request. Further information will be received through Email.
+    result:
+      status: REQUESTED
+      id: 4
+      requester_id: 22
+      role: 5
+      organization_id: 1
+      tenant_code: default
+      meta: {}
+      updated_at: '2026-07-15T10:56:23.721Z'
+      created_at: '2026-07-15T10:56:23.721Z'
+      handled_by: null
+      comments: null
+      deleted_at: null
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: 5e417d08-903c-452e-a327-ab2e53eda1f3
+requestOrgRole406Response:
+  type: object
+  description: Either the requested role does not exist, or a role request for this role/org/tenant
+    is already pending (statusCode 406).
+  x-internal-note: >-
+    Message keys ROLE_NOT_FOUND / ROLE_CHANGE_PENDING. No captured example for
+    either - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+
+# ---------------------------------------------------------------------------
+# read  (GET /user/v1/organization/read)
+# ---------------------------------------------------------------------------
+organizationRead200Response:
+  type: object
+  description: Organization details fetched successfully (statusCode 200).
+  x-internal-note: Message key ORGANIZATION_FETCHED_SUCCESSFULLY.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: Organization fetched successfully.
+    result:
+      id: 1
+      name: Default Organization
+      code: default_code
+      description: Updated via replay script
+      status: ACTIVE
+      org_admin: null
+      parent_id: null
+      related_orgs:
+        - 999999999
+      in_domain_visibility: null
+      theming: null
+      tenant_code: default
+      meta: null
+      created_by: null
+      updated_by: 19
+      created_at: '2026-07-15T09:40:42.047Z'
+      updated_at: '2026-07-15T10:54:47.236Z'
+      deleted_at: null
+      related_org_details: []
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: 764fc6a0-3b14-4dbd-9ffd-37c703b6f47f
+organizationRead406Response:
+  type: object
+  description: Organization not found for the given organisation_id/organisation_code (and
+    tenant_code, if used) (statusCode 406).
+  x-internal-note: 'Message key ORGANIZATION_NOT_FOUND. No captured example - shape-only.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+
+# ---------------------------------------------------------------------------
+# details  (GET /user/v1/organization/details/{id})
+# ---------------------------------------------------------------------------
+organizationDetails200Response:
+  type: object
+  description: Organization details fetched successfully (statusCode 200).
+  x-internal-note: Message key ORGANIZATION_FETCHED_SUCCESSFULLY.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: Organization fetched successfully.
+    result:
+      id: 1
+      name: Default Organization
+      code: default_code
+      description: Updated via replay script
+      status: ACTIVE
+      meta: null
+      registration_codes: []
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: 90ab213b-5e78-42cd-b9ea-292fd223819c
+organizationDetails406NotAccessibleResponse:
+  type: object
+  description: Caller cannot access the requested organization details (statusCode 406).
+  x-internal-note: 'Message key ORGANIZATION_NOT_ACCESSIBLE - verbatim captured example.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+  example:
+    responseCode: CLIENT_ERROR
+    error: []
+    meta:
+      correlation: 169a3df5-a647-40a3-ab73-ef412977ceaf
+    message: You cannot access this Organization details.
+organizationDetails406NotFoundResponse:
+  type: object
+  description: Organization not found - either the caller has no organization mapping for this
+    tenant, or no organization record matches the given id and tenant_code (statusCode 406).
+  x-internal-note: >-
+    Both cases use message key ORGANIZATION_NOT_FOUND, in
+    services/organization.js#details. No captured example - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+
+# ---------------------------------------------------------------------------
+# addRegistrationCode  (POST /user/v1/organization/addRegistrationCode/{id})
+# ---------------------------------------------------------------------------
+addRegistrationCode202Response:
+  type: object
+  description: Registration codes added successfully (statusCode 202).
+  x-internal-note: >-
+    Message key ORGANIZATION_UPDATED_SUCCESSFULLY. No captured example for the
+    happy path on this endpoint - shape-only.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    meta:
+      type: object
+addRegistrationCode400Response:
+  type: object
+  description: Either the caller is not authorized, or an admin caller omitted the required
+    tenant_code (statusCode 400).
+  x-internal-note: >-
+    Message key USER_IS_NOT_A_ADMIN (no admin/org-admin/tenant-admin role) or
+    TENANT_NOT_FOUND (admin caller with no resolvable tenant_code) -
+    controllers/v1/organization.js#addRegistrationCode. No captured example -
+    shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+addRegistrationCode406NotFoundResponse:
+  type: object
+  description: Organization not found for the given code and tenant_code (statusCode 406).
+  x-internal-note: 'Message key ORGANIZATION_NOT_FOUND - verbatim captured example.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+  example:
+    responseCode: CLIENT_ERROR
+    error: []
+    meta:
+      correlation: 5a37c4dd-3dc7-4b77-8f5f-95c4c983510e
+    message: Organization not found.
+addRegistrationCode406InvalidCodeResponse:
+  type: object
+  description: One or more of the supplied registration codes already exist on this organization
+    (statusCode 406).
+  x-internal-note: >-
+    Message key INVALID_REG_CODE_ERROR with interpolated errorValues/errorMessage.
+    No captured example - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      description: Error detail describing the invalid registration codes.
+      x-internal-note: >-
+        Interpolated i18n message object (key INVALID_REG_CODE_ERROR) rather
+        than a plain string - shape not verified against a captured example.
+addRegistrationCode406UniqueConstraintResponse:
+  type: object
+  description: The registration codes could not be added because a uniqueness constraint was
+    violated (statusCode 406).
+  x-internal-note: >-
+    Sequelize unique-constraint violation while bulk-creating registration
+    codes. Message key UNIQUE_CONSTRAINT_ERROR with interpolated fields. No
+    captured example - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      description: Error detail describing the uniqueness violation.
+      x-internal-note: >-
+        Interpolated i18n message object (key UNIQUE_CONSTRAINT_ERROR) rather
+        than a plain string - shape not verified against a captured example.
+
+# ---------------------------------------------------------------------------
+# removeRegistrationCode  (POST /user/v1/organization/removeRegistrationCode/{id})
+# ---------------------------------------------------------------------------
+removeRegistrationCode202Response:
+  type: object
+  description: Registration codes removed successfully (statusCode 202).
+  x-internal-note: >-
+    Message key ORGANIZATION_UPDATED_SUCCESSFULLY. No captured example for the
+    happy path on this endpoint - shape-only.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    meta:
+      type: object
+removeRegistrationCode400Response:
+  type: object
+  description: Either the caller is not authorized, or an admin caller omitted the required
+    tenant_code (statusCode 400).
+  x-internal-note: >-
+    Message key USER_IS_NOT_A_ADMIN or TENANT_NOT_FOUND -
+    controllers/v1/organization.js#removeRegistrationCode. No captured example
+    - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+removeRegistrationCode406NotFoundResponse:
+  type: object
+  description: Organization not found for the given code and tenant_code (statusCode 406).
+  x-internal-note: 'Message key ORGANIZATION_NOT_FOUND - verbatim captured example.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+  example:
+    responseCode: CLIENT_ERROR
+    error: []
+    meta:
+      correlation: 3aa3fe23-50c3-4e29-b2a7-844fbd26bf89
+    message: Organization not found.
+removeRegistrationCode406InvalidCodeResponse:
+  type: object
+  description: One or more of the supplied registration codes are not present on this organization
+    (statusCode 406).
+  x-internal-note: >-
+    Message key INVALID_REG_CODE_ERROR with interpolated errorValues/errorMessage.
+    No captured example - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      description: Error detail describing the invalid registration codes.
+      x-internal-note: >-
+        Interpolated i18n message object (key INVALID_REG_CODE_ERROR) rather
+        than a plain string - shape not verified against a captured example.
+
+# ---------------------------------------------------------------------------
+# addRelatedOrg  (POST /user/v1/organization/addRelatedOrg/{id})
+# ---------------------------------------------------------------------------
+addRelatedOrg202Response:
+  type: object
+  description: Related organizations updated successfully (statusCode 202).
+  x-internal-note: >-
+    Message key ORGANIZATION_UPDATED_SUCCESSFULLY. The captured case label
+    says "not-found related org id -> 404" but the actual captured
+    statusCode/body is 202 success with an empty result array; the case label
+    appears mislabeled by the capture script, the body itself is verbatim.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+  example:
+    responseCode: OK
+    message: Organization updated successfully
+    result: []
+    meta:
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+        - id: 2
+          type: formsrggjf
+          version: 0
+        - id: 3
+          type: formcsfgof
+          version: 0
+        - id: 4
+          type: formcsfgof
+          version: 0
+        - id: 5
+          type: formsrggjf
+          version: 0
+      correlation: b36a0dad-585e-4c91-a0aa-6248d550172c
+addRelatedOrg406Response:
+  type: object
+  description: Organization not found for the given id (statusCode 406).
+  x-internal-note: 'Message key ORGANIZATION_NOT_FOUND. No captured example - shape-only.'
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+
+# ---------------------------------------------------------------------------
+# removeRelatedOrg  (POST /user/v1/organization/removeRelatedOrg/{id})
+# GAP: this endpoint has NO entry at all in captured-responses.json - every
+# response below is shape-only, inferred from services/organization.js only.
+# ---------------------------------------------------------------------------
+removeRelatedOrg202Response:
+  type: object
+  description: Related organizations removed successfully (statusCode 202).
+  x-internal-note: >-
+    Message key ORGANIZATION_UPDATED_SUCCESSFULLY. No captured example exists
+    for this endpoint at all - shape-only.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    meta:
+      type: object
+removeRelatedOrg406NotFoundResponse:
+  type: object
+  description: Organization not found for the given id (statusCode 406).
+  x-internal-note: >-
+    Message key ORGANIZATION_NOT_FOUND. No captured example exists for this
+    endpoint at all - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+removeRelatedOrg406RemovalFailedResponse:
+  type: object
+  description: Either the organization currently has no related organizations at all, or one or more
+    of the supplied ids are not present in the organization's current related organizations
+    (statusCode 406).
+  x-internal-note: >-
+    Both cases use message key RELATED_ORG_REMOVAL_FAILED. No captured example
+    exists for this endpoint at all - shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string

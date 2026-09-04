@@ -1,0 +1,405 @@
+read:
+  '{userId}':
+    get:
+      summary: User Details
+      operationId: readUserProfile
+      tags:
+        - Users APIs
+      description: >
+        This API retrieves details of a user's profile.
+
+        - Endpoint: `/user/v1/user/read/{userId}`. There is also an id-less
+        variant, `/user/v1/user/read`, which defaults to the authenticated
+        caller's own id.
+
+        - `language` is optional; when provided and not `en`, role labels are
+        localized to it.
+
+        - An optional `internal_access_token` header allows fetching a
+        soft-deleted user's details.
+
+        - Note: the path id and `language` query parameter are not subject to
+        additional format validation.
+      x-internal-note: >-
+        The id-less variant is not modeled separately here since OpenAPI path
+        templates can't express an optional trailing path segment as a single
+        path item; it resolves to req.decodedToken.id (see
+        controllers/v1/user.js#read). No express-validator chain exists for
+        this operation (validators/v1/user.js has no `read` entry).
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available in login API
+            Response.
+          required: true
+          schema:
+            type: string
+        - name: internal_access_token
+          in: header
+          description: Optional. When present, allows fetching a soft-deleted (paranoid-excluded) user's details.
+          required: false
+          schema:
+            type: string
+        - in: path
+          name: userId
+          required: true
+          description: >
+            User ID to look up. (Note: functionally optional in the underlying
+            controller -- omitting this whole path segment via the sibling route
+            `/user/v1/user/read` defaults to the authenticated caller's own id.)
+          schema:
+            type: integer
+          example: 22
+        - in: query
+          name: language
+          required: false
+          description: Language code used to localize role labels in the response.
+          schema:
+            type: string
+          example: en
+      responses:
+        '200':
+          description: OK. User details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/user.yaml#/userProfileReadResponse200
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/user.yaml#/userProfileReadResponse401
+        '404':
+          description: Not Found. Returned when no user or share link matches.
+          x-internal-note: >-
+            services/user.js read() returns USER_NOT_FOUND (404). No captured
+            example exists for this status on this endpoint - schema is
+            shape-only, not verified.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/user.yaml#/userProfileReadResponse404Gap
+        '406':
+          description: Not Acceptable. Returned when the user's organization has no roles.
+          x-internal-note: >-
+            services/user.js read() returns ROLE_NOT_FOUND (406). No captured
+            example exists for this status on this endpoint - schema is
+            shape-only, not verified.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/user.yaml#/userProfileReadResponse406Gap
+profileById:
+  '{userId}':
+    get:
+      summary: User Profile By Id
+      operationId: getUserProfileById
+      tags:
+        - Users APIs
+      description: >
+        Retrieves a user's public profile by id, or by email/username/phone
+        (+phone_code) query lookup when no id is given.
+
+        - Endpoint: `/user/v1/user/profileById/{userId}`. There is also an
+        id-less variant, `/user/v1/user/profileById`, for the query-based
+        lookup described below.
+
+        - Mandatory parameters marked as `required` must have valid values.
+
+        - Parameters cannot be empty or null.
+
+        - Cross-field rule, only enforced when no path `id` is given: at least
+        one of `email`, `username`, or `phone` must be provided; if `phone` is
+        provided, `phone_code` is then also required.
+      x-internal-note: >-
+        The id-less variant is not modeled separately for the same reason
+        noted on `read`. This endpoint is not currently wired into
+        src/api-doc/openapi.yaml's top-level `paths:` map (only `read`,
+        `update`, `share`, and `setLanguagePreference` are); this path item is
+        added here for completeness and correctness of this domain's docs, but
+        will not be reachable from the generated spec until the reconciliation
+        pass adds a corresponding top-level $ref. Cross-field rule reference:
+        validators/v1/user.js#profileById.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available in login API
+            Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: userId
+          required: true
+          description: Numeric user id. Optional in the underlying controller (see id-less variant note above).
+          schema:
+            type: string
+            pattern: ^[0-9]+$
+          example: '22'
+        - in: query
+          name: email
+          required: false
+          description: Email to look up by (only used when no path id is given).
+          schema:
+            type: string
+            format: email
+          example: example@mail.com
+        - in: query
+          name: username
+          required: false
+          description: Username to look up by (only used when no path id is given).
+          schema:
+            type: string
+          example: mentee_3t7m88mvl5
+        - in: query
+          name: phone
+          required: false
+          description: Phone number to look up by, 7-15 digits (only used when no path id is given). Requires phone_code if provided.
+          schema:
+            type: string
+            pattern: ^[0-9]{7,15}$
+          example: '9876543210'
+        - in: query
+          name: phone_code
+          required: false
+          description: Country dialing code, e.g. +91. Required if phone is provided.
+          schema:
+            type: string
+            pattern: ^\+[0-9]{1,4}$
+          example: '+91'
+        - in: query
+          name: tenant_code
+          required: true
+          description: Tenant code to scope the lookup to.
+          schema:
+            type: string
+          example: default
+      responses:
+        '200':
+          description: OK. User profile fetched successfully.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/user.yaml#/userProfileById200Response
+        '404':
+          description: Not Found. No matching user.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/user.yaml#/userProfileById404Response
+        '422':
+          description: >-
+            Unprocessable Entity. Returned when the lookup parameters are
+            empty, or when a phone number is provided without a resolvable
+            phone_code.
+          x-internal-note: >-
+            VALIDATION_FAILED per services/user.js profileById(). No captured
+            example exists for this status on this endpoint - schema is
+            shape-only, not verified.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/user.yaml#/userProfileById422Gap
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          x-internal-note: >-
+            Raised by the auth middleware. Captured example reused from the
+            sibling `read` endpoint's capture (same middleware, not separately
+            captured for this endpoint, so treat with slightly lower
+            confidence).
+          content:
+            application/json:
+              schema:
+                $ref: ../components/user.yaml#/userProfileReadResponse401
+setLanguagePreference:
+  patch:
+    summary: Setting preferred language of user
+    operationId: setLanguagePreference
+    tags:
+      - Users APIs
+    description: >
+      This API updates a user's preferred language.
+
+      - Endpoint: `/user/v1/user/setLanguagePreference`
+
+      - Mandatory parameters marked as `required` must have valid values.
+
+      - Parameters cannot be empty or null.
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: To make use of the API, you require X-auth-token. This is Available in login API Response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/user.yaml#/userSetLanguagePreferenceRequest
+    responses:
+      '202':
+        description: Accepted. Preferred language updated successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/user.yaml#/userSetLanguagePreferenceResponse202
+      '401':
+        description: >-
+          Unauthorized. Two distinct causes share this status: (1)
+          missing/invalid X-auth-token, raised by the auth middleware; (2) the
+          token's user could not be resolved.
+        x-internal-note: >-
+          Cause (1): captured example reused from the sibling `read`
+          endpoint's capture (same middleware, not separately captured here,
+          so treat with slightly lower confidence). Cause (2):
+          services/user.js setLanguagePreference() returns USER_NOT_FOUND
+          (401); no captured example exists at all - schema is shape-only.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: ../components/user.yaml#/userProfileReadResponse401
+                - $ref: ../components/user.yaml#/userSetLanguagePreferenceResponse401Gap
+      '400':
+        description: >-
+          Bad Request. Returned when preferred_language fails entity-type
+          validation.
+        x-internal-note: >-
+          services/user.js setLanguagePreference() returns
+          PROFILE_UPDATION_FAILED (400). No captured example exists for this
+          status on this endpoint - schema is shape-only, not verified.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/user.yaml#/userSetLanguagePreferenceResponse400Gap
+update:
+  patch:
+    summary: Update User Profile
+    operationId: updateUserProfile
+    tags:
+      - Users APIs
+    description: >
+      This API updates the authenticated user's own profile.
+
+      - Endpoint: `/user/v1/user/update`
+
+      - Mandatory parameters marked as `required` must have valid values.
+
+      - Parameters cannot be empty or null.
+
+      - All request body fields are optional.
+
+      - No cross-field rules apply to this operation.
+    x-internal-note: >-
+      All request body fields are optional per validators/v1/user.js#update.
+      No cross-field rules apply to this operation (controllers/v1/user.js and
+      services/user.js both had zero matches in cross-field-rules.json).
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: To make use of the API, you require X-auth-token. This is Available in login API Response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/user.yaml#/userProfileUpdateRequest
+    responses:
+      '202':
+        description: Accepted. User profile updated successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/user.yaml#/userProfileUpdateResponse202
+      '400':
+        description: >-
+          Bad Request. Returned in two cases: submitting an `email` field
+          (which this operation does not accept), or a submitted field failing
+          the organization's entity-type validation rules.
+        x-internal-note: >-
+          Two distinct failures both return 400 here per services/user.js
+          update(): EMAIL_UPDATE_FAILED and VALIDATION_FAILED. Neither has a
+          captured example for this endpoint - schemas are shape-only, not
+          verified. `oneOf` is used since either failure body can appear under
+          this same status code.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: ../components/user.yaml#/userProfileUpdateResponse400EmailUpdateGap
+                - $ref: ../components/user.yaml#/userProfileUpdateResponse400ValidationGap
+      '401':
+        description: >-
+          Unauthorized. Two distinct causes share this status: (1)
+          missing/invalid X-auth-token, raised by the auth middleware; (2) the
+          token's user could not be resolved.
+        x-internal-note: >-
+          Cause (1): captured example reused from the sibling `read`
+          endpoint's capture (same middleware, not separately captured here,
+          so treat with slightly lower confidence). Cause (2):
+          services/user.js update() returns USER_NOT_FOUND (401); no captured
+          example exists at all - schema is shape-only.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: ../components/user.yaml#/userProfileReadResponse401
+                - $ref: ../components/user.yaml#/userProfileUpdateResponse401Gap
+share:
+  '{userId}':
+    get:
+      summary: Share Mentor Profile
+      operationId: shareMentorProfile
+      tags:
+        - Users APIs
+      description: >
+        This API is associated with sharing a mentor's profile.
+
+        - Endpoint for sharing a mentor's profile: `/user/v1/user/share/{userId}`
+
+        - Mandatory parameters marked as `required` must have valid values.
+
+        - Parameters cannot be empty or null.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available in login API
+            Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: userId
+          required: true
+          description: Please append a valid User ID to the Request URL.
+          schema:
+            type: string
+          example: '22'
+      responses:
+        '200':
+          description: OK. Mentor profile shared successfully.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/user.yaml#/userProfileShare200Response
+        '400':
+          description: Bad Request. User not found.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/user.yaml#/userProfileShare400Response
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          x-internal-note: >-
+            Raised by the auth middleware. Captured example reused from the
+            sibling `read` endpoint's capture (same middleware, not separately
+            captured for this endpoint, so treat with slightly lower
+            confidence).
+          content:
+            application/json:
+              schema:
+                $ref: ../components/user.yaml#/userProfileReadResponse401

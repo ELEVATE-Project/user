@@ -1,0 +1,104 @@
+getSampleCSVResponse200:
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Download Url Generated Successfully.
+    result:
+      type: string
+      example: https://mentoring-dev-storage.s3.ap-south-1.amazonaws.com/sample/bulk_user_creation.csv
+    meta:
+      type: object
+cloudServicesResponse200:
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Signed Url Generated Successfully.
+    result:
+      type: object
+      properties:
+        signedUrl:
+          type: string
+          example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=aws-access-key-id%2F20220602%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20220602T055949Z&X-Amz-Expires=1800&X-Amz-Signature=0588b16fba45cb85efdc45749173c42ba26b47a9faa9bce5715c666b2657a4d4&X-Amz-SignedHeaders=host
+        filePath:
+          type: string
+          example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
+        destFilePath:
+          type: string
+          example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
+    meta:
+      type: object
+cloudServicesDownloadResponse200:
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Download Url Generated Successfully.
+    result:
+      type: string
+      example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-image.jpg
+    meta:
+      type: object
+cloudServicesValidationErrorResponse422:
+  type: object
+  description: >-
+    express-validator validation failure (HTTP 422) — raised when `fileName`
+    is missing or empty.
+  x-internal-note: No captured example exists for this status on this endpoint - shape-only.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+          param:
+            type: string
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+  example:
+    responseCode: CLIENT_ERROR
+    error:
+      - location: query
+        param: fileName
+        msg: fileName field is empty
+    meta:
+      correlation: 3d8e1f2a-5b6c-4d7e-8f9a-1b2c3d8e1f2a
+    message: Validation failed, Entered data is incorrect!
+cloudServicesUnauthorizedResponse401:
+  type: object
+  properties:
+    responseCode:
+      type: string
+      example: UNAUTHORIZED
+    error:
+      type: array
+      items: {}
+      example: []
+    meta:
+      type: object
+    message:
+      type: string
+      example: You do not have the required permissions to access this resource. Please contact your administrator for assistance.

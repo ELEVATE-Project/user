@@ -1,71 +1,112 @@
-version: '3'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.0
+    restart: unless-stopped
     ports:
       - '2181:2181'
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
       - ZOOKEEPER_CLIENT_PORT=2181
       - ZOOKEEPER_TICK_TIME=2000
+      # Works around a JDK cgroup-v2 detection bug (NPE on startup) on modern
+      # Linux hosts/distros that default to cgroup v2.
+      - JAVA_TOOL_OPTIONS=-XX:-UseContainerSupport
     networks:
       - elevate_net
-    logging:
-      driver: none
+    healthcheck:
+      # 'srvr' is whitelisted by default; 'ruok' is not and requires extra config.
+      test: ['CMD-SHELL', 'echo srvr | nc -w 2 localhost 2181 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   kafka:
-    image: 'confluentinc/cp-kafka:7.3.0'
+    image: confluentinc/cp-kafka:7.3.0
+    restart: unless-stopped
     ports:
-      - 9092:9092
+      - '9093:9092'
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      # Works around a JDK cgroup-v2 detection bug (NPE on startup) on modern
+      # Linux hosts/distros that default to cgroup v2.
+      JAVA_TOOL_OPTIONS: -XX:-UseContainerSupport
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     networks:
       - elevate_net
-    logging:
-      driver: none
-  mongo:
-    image: 'mongo:4.1.4'
-    restart: 'always'
-    ports:
-      - '27017:27017'
-    networks:
-      - elevate_net
-    volumes:
-      - mongo-data:/data/db
-    logging:
-      driver: none
+    healthcheck:
+      test: kafka-topics --bootstrap-server localhost:9092 --list || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   redis:
-    image: 'redis:7.0.0'
-    restart: 'always'
-    expose:
-      - '6379'
-    networks:
-      - elevate_net
-    logging:
-      driver: none
-  users:
-    image: shikshalokamqa/elevate-user:2.2
+    image: redis:7.0.0
+    restart: unless-stopped
     ports:
-      - '3000:3001'
-    command: ['nodemon', 'app.js']
-    environment:
-      - MONGODB_URL=mongodb://mongo:27017/elevate-users
-      - KAFKA_URL=kafka:9092
-    env_file:
-      - ${env_file}
-    depends_on:
-      - kafka
-      - mongo
+      - '6379:6379'
     networks:
       - elevate_net
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: citusdata/citus:13.0
+    container_name: elevate_user_postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: '${POSTGRES_USER:-postgres}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-postgres}'
+      POSTGRES_DB: '${POSTGRES_DB:-elevate-user}'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - elevate_net
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user:
+    build: '.'
+    image: elevate/user:local
+    volumes:
+      - ./src:/var/src
+    ports:
+      - '3001:3001'
+      - '9229:9229'
+    command: ['nodemon', '--inspect=0.0.0.0:9229', '--trace-warnings', 'app.js']
+    env_file:
+      - ./src/.env
+    environment:
+      - APPLICATION_HOST=user
+      - KAFKA_URL=kafka:9092
+      - REDIS_HOST=redis://redis:6379
+      - DEV_DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-elevate-user}
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - elevate_net
+
 networks:
   elevate_net:
     external: false
+
 volumes:
-  mongo-data:
+  postgres_data:

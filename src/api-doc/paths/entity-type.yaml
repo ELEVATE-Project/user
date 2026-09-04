@@ -1,0 +1,270 @@
+create:
+  post:
+    summary: Create Entity Type
+    operationId: createEntityType
+    tags:
+      - EntityType APIs
+    description: 'Use this API to create a user entity type.
+
+
+      - Endpoint: `/user/v1/entity-type/create`
+
+      - Provide values for parameters marked as `required`.
+
+      - The X-auth-token is mandatory and cannot be empty or null.
+
+      '
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the user who is already a mentee of the organization.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/entity-type.yaml#/createEntityTypeRequest
+    responses:
+      '201':
+        description: OK. Entity type created successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/entity-type.yaml#/createEntityType201Response
+      '400':
+        description: Bad Request. Returned when the entity type already exists.
+        x-internal-note: >-
+          No live captured example exists for this case; see
+          createEntityType400Response.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/entity-type.yaml#/createEntityType400Response
+      '422':
+        description: Unprocessable Entity. Request body failed validation.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/entity-type.yaml#/createEntityType422Response
+update:
+  '{id}':
+    post:
+      summary: Update Entity Type
+      operationId: updateEntityType
+      tags:
+        - EntityType APIs
+      description: 'Use this API to update an entity type.
+
+
+        - Endpoint: `/user/v1/entity-type/update/{id}`
+
+        - Provide values for parameters marked as `required`.
+
+        - The X-auth-token is mandatory and cannot be empty or null.
+
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token obtained from the login API response.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Please append a valid entity type ID to the request URL.
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ../components/entity-type.yaml#/updateEntityTypeRequest
+      responses:
+        '202':
+          description: Accepted. Entity type updated successfully.
+          x-internal-note: >-
+            No live captured example exists for this case; see
+            updateEntityType202Response.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/entity-type.yaml#/updateEntityType202Response
+        '400':
+          description: >-
+            Bad Request. Returned when the entity type is not found, or when
+            it has already been deleted.
+          x-internal-note: >-
+            The "not found" case has been captured live; the "already
+            deleted" case is inferred from code but has never been captured.
+            See updateEntityType400Response.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/entity-type.yaml#/updateEntityType400Response
+        '422':
+          description: Unprocessable Entity. Request body failed validation.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/entity-type.yaml#/updateEntityType422Response
+read:
+  post:
+    summary: Read Entity Type
+    operationId: readEntityType
+    tags:
+      - EntityType APIs
+    description: 'Use this API to retrieve a list of entity types.
+
+
+      - Endpoint: `/user/v1/entity-type/read`
+
+      - When no `value` is sent in the body, all system entity types for the
+      organization are returned (flat array).
+
+      - When a `value` is sent, matching user entity types (with their entities)
+      are returned under `result.entity_types`.
+
+      - The X-auth-token is mandatory and cannot be empty or null.
+
+      - Optional `type`, `deleted`, and `status` query parameters are also
+      accepted; see the parameter descriptions below for details.
+
+      '
+    x-internal-note: >-
+      The `value`-based branch (result.entity_types) was never captured
+      live; see readEntityTypeUserResponse. The `type`, `deleted`, and
+      `status` query parameters are defined in validators/v1/entity-type.js
+      and only validated when `req.query.type` is present (see
+      conditionalNotes in validator-fields.json), but the controller
+      (controllers/v1/entity-type.js#read) never reads req.query at all -
+      it branches only on req.body.value. It is unclear whether these
+      query params have any real effect, or are dead/vestigial validation
+      left over from a prior implementation. Documented for completeness
+      but flagged as a gap.
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: To make use of the API, you require X-auth-token. This is available in the login API response.
+        required: true
+        schema:
+          type: string
+      - name: type
+        in: query
+        required: false
+        description: Optional. Filter by entity type name.
+        x-internal-note: >-
+          Only validated when this parameter is present; the controller
+          does not appear to consume it. Real effect unconfirmed.
+        schema:
+          type: string
+      - name: deleted
+        in: query
+        required: false
+        description: Optional. Filter by deleted status.
+        x-internal-note: 'Only validated when `type` is also present; unconfirmed real effect.'
+        schema:
+          type: boolean
+      - name: status
+        in: query
+        required: false
+        description: Optional. Filter by status.
+        x-internal-note: 'Only validated when `type` is also present; unconfirmed real effect.'
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              value:
+                type: array
+                description: Optional. Entity type value(s) to filter user entity types by.
+                items:
+                  type: string
+              read_user_entity:
+                type: boolean
+          examples:
+            allSystemEntityTypes:
+              summary: Fetch all system entity types (no value)
+              value: {}
+            byValue:
+              summary: Fetch user entity types by value
+              value:
+                value:
+                  - ln
+                read_user_entity: false
+    responses:
+      '200':
+        description: OK. Entity types fetched successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/entity-type.yaml#/readEntityType200Response
+      '400':
+        description: Bad Request. Entity type not found.
+        x-internal-note: >-
+          No live captured example exists for this endpoint/status pairing;
+          see readEntityType400Response.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/entity-type.yaml#/readEntityType400Response
+delete:
+  '{id}':
+    delete:
+      summary: Delete Entity Type
+      operationId: deleteEntityType
+      tags:
+        - EntityType APIs
+      description: 'This API is associated with deleting an entity type.
+
+
+        - Endpoint: `/user/v1/entity-type/delete/{id}`
+
+        - It is mandatory to provide values for parameters marked with `required`.
+
+        - Mandatory parameters cannot be empty or null.
+
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To use the API, include X-auth-token. This is available in the login API response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          description: Please append a valid entity type ID to the request URL.
+          schema:
+            type: integer
+          example: 31
+      responses:
+        '202':
+          description: Accepted. Entity type deleted successfully.
+          x-internal-note: >-
+            No live captured example exists for this case; see
+            deleteEntityType202Response.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/entity-type.yaml#/deleteEntityType202Response
+        '400':
+          description: Bad Request. Entity type not found.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/entity-type.yaml#/deleteEntityType400Response
+        '422':
+          description: Unprocessable Entity. `id` path parameter is missing/invalid.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/entity-type.yaml#/deleteEntityType422Response

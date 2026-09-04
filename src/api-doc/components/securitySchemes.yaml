@@ -1,0 +1,4 @@
+bearer: null
+type: apiKey
+name: X-auth-token
+in: header

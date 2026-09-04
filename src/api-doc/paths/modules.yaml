@@ -1,0 +1,426 @@
+create:
+  post:
+    summary: Create Modules
+    description: 'Create modules for users.
+
+      - Endpoint: `/user/v1/modules/create`.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+
+      '
+    operationId: createModules
+    tags:
+      - Modules
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the admin.
+        required: true
+        schema: &id001
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                description: Unique module code. Must not contain spaces (matches `/^[a-zA-Z_-]+$/`).
+              status:
+                type: string
+                description: Optional module status. Must not contain spaces (matches `/^[A-Za-z]*$/`) when provided.
+            required:
+              - code
+          examples:
+            example1:
+              value:
+                code: systemadmin
+    responses:
+      '201':
+        description: Module created successfully.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                message:
+                  type: string
+                result:
+                  type: object
+                  properties:
+                    Id:
+                      type: number
+                    code:
+                      type: string
+                    status:
+                      type: string
+                meta:
+                  type: object
+                  properties:
+                    correlation:
+                      type: string
+            examples:
+              gap_no_captured_example:
+                summary: Module created successfully.
+                x-internal-note: 'No captured response available for this status/message; schema is types-only (no example values).'
+                value:
+                  responseCode: OK
+                  message: MODULES_CREATED_SUCCESSFULLY
+                  result:
+                    Id: 1
+                    code: '<string>'
+                    status: '<string>'
+                  meta:
+                    correlation: '<string>'
+      '400':
+        description: Module code already exists.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                message:
+                  type: string
+            examples:
+              gap_no_captured_example:
+                summary: Returned when a module with the given code already exists.
+                x-internal-note: 'MODULES_ALREADY_EXISTS thrown on UniqueConstraintError; no captured response available. Shape only.'
+                value:
+                  responseCode: '<string>'
+                  message: MODULES_ALREADY_EXISTS
+update:
+  '{id}':
+    post:
+      summary: Update Modules
+      description: 'Update an existing module.
+
+        - Endpoint: `/user/v1/modules/update`.
+
+        - It is mandatory to provide values for parameters marked with `required`.
+
+        - Mandatory parameters cannot be empty or null.
+
+        '
+      operationId: updateModules
+      tags:
+        - Modules
+      parameters: &id002
+        - name: X-auth-token
+          in: header
+          description: Access token of the admin.
+          required: true
+          schema: *id001
+        - name: id
+          in: path
+          description: Module id.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: Unique module code. Must not contain spaces (matches `/^[a-zA-Z_-]+$/`).
+                status:
+                  type: string
+                  description: Optional module status. Must not contain spaces (matches `/^[A-Za-z]*$/`) when provided.
+              required:
+                - code
+            examples:
+              example1:
+                value:
+                  code: allsessionss
+      responses:
+        '201':
+          description: Module updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      status:
+                        type: string
+                      code:
+                        type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+              examples:
+                gap_no_captured_example:
+                  summary: Module updated successfully.
+                  x-internal-note: 'No captured response available for this status/message; schema is types-only (no example values).'
+                  value:
+                    responseCode: OK
+                    message: MODULES_UPDATED_SUCCESSFULLY
+                    result:
+                      id: 1
+                      status: '<string>'
+                      code: '<string>'
+                    meta:
+                      correlation: '<string>'
+        '400':
+          description: The module update, or the related permissions update, failed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                gap_modules_not_updated:
+                  summary: Returned when the module update, or the related permissions
+                    update, fails.
+                  x-internal-note: 'MODULES_NOT_UPDATED returned when the update and the related permissions update both fail; no captured response available. Shape only.'
+                  value:
+                    responseCode: CLIENT_ERROR
+                    message: MODULES_NOT_UPDATED
+        '500':
+          description: >-
+            Internal Server Error. This is the real, current behavior when no
+            module exists for the given id — a server-side error is raised
+            instead of a clean 400 in this case.
+          x-internal-note: >-
+            services/modules.js update(): when modulesQueries.findModulesById(id)
+            returns falsy, the code does a bare `throw new Error('MODULES_NOT_FOUND')`
+            (not responses.failureResponse()). The controller's catch just
+            `return error` (the raw Error object), and routes/index.js's
+            response handler only sets a clean status from
+            error.statusCode/error.responseCode — a plain Error has neither,
+            so it falls through to the generic 500 "Oops! Something Went
+            Wrong." path, not a 400 CLIENT_ERROR. See
+            TODO-reverted-bugfixes.md. (A prior "CORRECTION" note here
+            claimed this was confirmed to be a normal 400 - that was itself
+            wrong; direct source confirms the bare throw is still there.)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: SERVER_ERROR
+                  message:
+                    type: string
+                    example: Oops! Something Went Wrong.
+              example:
+                responseCode: SERVER_ERROR
+                message: Oops! Something Went Wrong.
+list:
+  get:
+    summary: Modules List
+    description: 'Get a list of modules.
+
+      - Endpoint: `/user/v1/modules/list`.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+
+      '
+    operationId: listModules
+    tags:
+      - Modules
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the admin.
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Page number for pagination.
+        required: false
+        schema:
+          type: integer
+      - name: limit
+        in: query
+        description: Number of items per page.
+        required: false
+        schema:
+          type: integer
+      - in: query
+        name: search
+        description: search on code
+        schema:
+          type: string
+        required: false
+    responses:
+      '200':
+        description: OK. Modules fetched successfully.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                message:
+                  type: string
+                result:
+                  type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: number
+                          code:
+                            type: string
+                          status:
+                            type: string
+                        required:
+                          - id
+                          - code
+                          - status
+                    count:
+                      type: number
+                meta:
+                  type: object
+                  properties:
+                    correlation:
+                      type: string
+            examples:
+              gap_no_captured_example:
+                summary: Modules retrieved successfully.
+                x-internal-note: 'No captured response available for this status/message; schema is types-only (no example values).'
+                value:
+                  responseCode: OK
+                  message: MODULES_FETCHED_SUCCESSFULLY
+                  result:
+                    data:
+                      - id: 1
+                        code: '<string>'
+                        status: '<string>'
+                    count: 1
+                  meta:
+                    correlation: '<string>'
+      '400':
+        description: No modules found, or `search` contains characters rejected by the
+          shared pagination middleware.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                message:
+                  type: string
+            examples:
+              gap_no_captured_example:
+                summary: Returned when no modules match the query.
+                x-internal-note: 'MODULES_HAS_EMPTY_LIST returned when the query yields zero rows/count; no captured response available. Shape only.'
+                value:
+                  responseCode: '<string>'
+                  message: MODULES_HAS_EMPTY_LIST
+              gap_invalid_search_characters:
+                summary: Returned when `search` contains characters rejected by the
+                  pagination middleware.
+                x-internal-note: >-
+                  middlewares/pagination.js rejects a search string matching
+                  /[`!#$%^&*()_+\-=\[\]{};':"\\|<>\/?~]/ with statusCode 400;
+                  no captured response available. Shape only.
+                value:
+                  responseCode: '<string>'
+                  message: '<string>'
+delete:
+  '{id}':
+    delete:
+      summary: Delete Modules
+      description: 'Delete an existing module.
+
+        - Endpoint: `/user/v1/modules/delete`.
+
+        - It is mandatory to provide values for parameters marked with `required`.
+
+        - Mandatory parameters cannot be empty or null.
+
+        '
+      operationId: deleteModules
+      tags:
+        - Modules
+      parameters: *id002
+      responses:
+        '202':
+          description: Module deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties: {}
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+              examples:
+                gap_no_captured_example:
+                  summary: Module deleted successfully.
+                  x-internal-note: 'No captured response available for this status/message; schema is types-only (no example values).'
+                  value:
+                    responseCode: OK
+                    message: MODULES_DELETED_SUCCESSFULLY
+                    result: {}
+                    meta:
+                      correlation: '<string>'
+        '400':
+          description: Module not found, or module could not be deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                gap_module_not_found:
+                  summary: Returned when the module id does not exist.
+                  x-internal-note: 'MODULES_ALREADY_DELETED_OR_MODULE_NOT_PRESENT returned when the module id does not exist; no captured response available. Shape only.'
+                  value:
+                    responseCode: '<string>'
+                    message: MODULES_ALREADY_DELETED_OR_MODULE_NOT_PRESENT
+                gap_module_not_deleted:
+                  summary: Returned when the delete operation fails after the module was found.
+                  x-internal-note: 'MODULES_NOT_DELETED returned when the delete query fails after the module was found; no captured response available. Shape only.'
+                  value:
+                    responseCode: '<string>'
+                    message: MODULES_NOT_DELETED
