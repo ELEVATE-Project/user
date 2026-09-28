@@ -1,0 +1,574 @@
+create:
+  post:
+    summary: Create Permissions
+    description: 'Create permissions for users.
+
+      - Endpoint: `/user/v1/permissions/create`.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+
+      '
+    operationId: createPermissions
+    tags: &id001
+      - Permissions
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the admin.
+        required: true
+        schema: &id002
+          type: string
+    requestBody: &id003
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                description: Unique permission code. Must not contain spaces (matches
+                  `/^[a-z_]+$/`). Must be unique (checked against existing permissions).
+              module:
+                type: string
+                description: Module name. Must not contain spaces (matches `/^[a-zA-Z_-]+$/`).
+              request_type:
+                type: string
+                description: 'HTTP request type this permission covers. Must be one
+                  of: GET, POST, PATCH, PUT, DELETE. Note: the request accepts a
+                  single string, but the create/update responses echo it back
+                  inside an array (`result.request_type`).'
+                enum:
+                  - GET
+                  - POST
+                  - PATCH
+                  - PUT
+                  - DELETE
+              api_path:
+                type: string
+                description: API path this permission applies to. Must match `/^\/[a-zA-Z0-9_]+\/v[0-9]+\/[a-zA-Z0-9_*:/\-]+(?:\/:[a-zA-Z0-9_]+)?$/`.
+              status:
+                type: string
+                description: Optional permission status. Must not contain spaces
+                  (matches `/^[A-Za-z]*$/`) and, when provided, must be non-empty.
+            required:
+              - code
+              - module
+              - request_type
+              - api_path
+          examples:
+            example1:
+              value:
+                code: read_modules_list
+                module: modules
+                request_type: GET
+                api_path: /mentoring/v1/modules/list
+                status: ACTIVE
+    responses:
+      '201':
+        description: Permission created successfully.
+        content:
+          application/json:
+            schema: &id004
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                message:
+                  type: string
+                result:
+                  type: object
+                  properties:
+                    Id:
+                      type: number
+                    status:
+                      type: string
+                    module:
+                      type: string
+                    request_type:
+                      type: array
+                      items:
+                        type: string
+                meta:
+                  type: object
+                  properties:
+                    correlation:
+                      type: string
+            examples:
+              gap_no_captured_example:
+                summary: 'No captured response available for this status/message
+                  (captured-responses.json has no matching entry for permissions
+                  create); schema is types-only (no example values).'
+                x-internal-note: >-
+                  Previous draft example values (Id: 40, module: ssss,
+                  correlation UUID) were fabricated/copied from a sibling
+                  domain and have been removed, including a fabricated meta
+                  field matching no real response field anywhere in the
+                  codebase (helpers/responses.js's meta object only ever
+                  sets formsVersion and correlation).
+                value:
+                  responseCode: OK
+                  message: PERMISSION_CREATED_SUCCESSFULLY
+                  result:
+                    Id: 1
+                    status: '<string>'
+                    module: '<string>'
+                    request_type:
+                      - '<string>'
+                  meta:
+                    correlation: '<string>'
+      '400':
+        description: Permission could not be created (unique constraint violation
+          on `code`).
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                message:
+                  type: string
+              required:
+                - responseCode
+                - message
+            examples:
+              gap_no_captured_example:
+                summary: 'Per services/permissions.js create() throws this on Sequelize
+                  UniqueConstraintError. Message is dynamically built (`` `${errorMessage.trim()}
+                  should be unique.` ``) and depends on which columns violated the
+                  unique constraint; the only column checked by name is `code`. No
+                  captured response available. Shape only, no fabricated value.'
+                value:
+                  responseCode: '<string>'
+                  message: '<string containing "should be unique.">'
+update:
+  '{id}':
+    post:
+      summary: Update Permissions
+      description: 'Update permissions for users.
+
+        - Endpoint: `/user/v1/permissions/update`.
+
+        - It is mandatory to provide values for parameters marked with `required`.
+
+        - Mandatory parameters cannot be empty or null.
+
+        '
+      operationId: updatePermissions
+      tags: *id001
+      parameters: &id005
+        - name: X-auth-token
+          in: header
+          description: Access token of the admin.
+          required: true
+          schema: *id002
+        - name: id
+          in: path
+          description: Permission id.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: "Unique permission code. Must not contain spaces
+                    (matches `/^[a-z_]+$/`). NOTE: unlike create, update's validator
+                    does NOT run the async `isUniqueCode` check."
+                module:
+                  type: string
+                  description: Module name. Must not contain spaces (matches `/^[a-zA-Z_-]+$/`).
+                request_type:
+                  type: string
+                  description: 'Must be one of: GET, POST, PATCH, PUT, DELETE.'
+                  enum:
+                    - GET
+                    - POST
+                    - PATCH
+                    - PUT
+                    - DELETE
+                api_path:
+                  type: string
+                  description: API path this permission applies to. Must match `/^\/[a-zA-Z0-9_]+\/v[0-9]+\/[a-zA-Z0-9_*:/\-]+(?:\/:[a-zA-Z0-9_]+)?$/`.
+                status:
+                  type: string
+                  description: Optional permission status. Must not contain spaces
+                    (matches `/^[A-Za-z]*$/`) and, when provided, must be non-empty.
+              required:
+                - code
+                - module
+                - request_type
+                - api_path
+            examples:
+              example1:
+                value:
+                  code: read_modules_list
+                  module: modules
+                  request_type: GET
+                  api_path: /mentoring/v1/modules/list
+                  status: ACTIVE
+      responses:
+        '201':
+          description: Permission updated successfully.
+          content:
+            application/json:
+              schema: *id004
+              examples:
+                gap_no_captured_example:
+                  summary: 'No captured response available for this status/message
+                    (captured-responses.json has no matching entry for permissions
+                    update); schema is types-only (no example values).'
+                  x-internal-note: >-
+                    Previous draft example values (Id: 40, module: ssss,
+                    correlation UUID) were fabricated/copied from a sibling
+                    domain and have been removed, including a fabricated meta
+                    field matching no real response field anywhere in the
+                    codebase.
+                  value:
+                    responseCode: OK
+                    message: PERMISSION_UPDATED_SUCCESSFULLY
+                    result:
+                      Id: 1
+                      status: '<string>'
+                      module: '<string>'
+                      request_type:
+                        - '<string>'
+                    meta:
+                      correlation: '<string>'
+        '400':
+          description: Permission could not be updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                required:
+                  - responseCode
+                  - message
+              examples:
+                gap_permission_not_updated:
+                  summary: 'Per services/permissions.js update() returns PERMISSION_NOT_UPDATED
+                    when permissionsQueries.updatePermissions(...) returns falsy
+                    (permission exists but update did not persist). No captured
+                    response available. Shape only.'
+                  value:
+                    responseCode: CLIENT_ERROR
+                    message: PERMISSION_NOT_UPDATED
+        '500':
+          description: >-
+            Internal Server Error. This is the real, current behavior when no
+            permission exists for the given id — a server-side error is
+            raised instead of a clean 400 in this case.
+          x-internal-note: >-
+            services/permissions.js update(): when
+            permissionsQueries.findPermissionById(id) returns falsy, the code
+            does a bare `throw new Error('PERMISSION_NOT_FOUND')` (not
+            responses.failureResponse()) - surfaces as a generic 500, not a
+            clean 400. See TODO-reverted-bugfixes.md. (A prior "CORRECTION"
+            note here claimed this was confirmed to be a normal 400 - that
+            was itself wrong; direct source confirms the bare throw is still
+            there.)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: SERVER_ERROR
+                  message:
+                    type: string
+                    example: Oops! Something Went Wrong.
+              example:
+                responseCode: SERVER_ERROR
+                message: Oops! Something Went Wrong.
+list:
+  get:
+    summary: Permissions List
+    description: 'Get a list of permissions.
+
+      - Endpoint: `/user/v1/permissions/list`.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+
+      '
+    operationId: listPermissions
+    tags:
+      - Permissions
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the admin.
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Page number for pagination.
+        required: false
+        schema:
+          type: integer
+      - name: limit
+        in: query
+        description: Number of items per page.
+        required: false
+        schema:
+          type: integer
+      - in: query
+        name: search
+        description: search on code
+        schema:
+          type: string
+        required: false
+    responses:
+      '200':
+        description: ''
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                message:
+                  type: string
+                result:
+                  type: object
+                  properties:
+                    results:
+                      type: object
+                      properties:
+                        data:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: number
+                              code:
+                                type: string
+                              module:
+                                type: string
+                              request_type:
+                                type: array
+                                items:
+                                  type: string
+                              api_path:
+                                type: string
+                              status:
+                                type: string
+                        count:
+                          type: number
+                meta:
+                  type: object
+                  properties:
+                    correlation:
+                      type: string
+            examples:
+              gap_no_captured_example:
+                summary: 'No captured response available for this status/message
+                  (the only captured-responses.json entry keyed to a permissions
+                  endpoint, "GET /mentoring/v1/permissions/list", is explicitly annotated
+                  "actual response: route not under this service base path" — it
+                  reflects the generic 401 auth-middleware response, not a genuine
+                  200 list body). Schema is types-only.'
+                x-internal-note: >-
+                  Previous draft example values (id: 3, code:
+                  read_modules_list, count: 1, correlation UUID) were
+                  fabricated/copied from a sibling domain and have been
+                  removed, including a fabricated meta field matching no real
+                  response field anywhere in the codebase.
+                value:
+                  responseCode: OK
+                  message: PERMISSION_FETCHED_SUCCESSFULLY
+                  result:
+                    results:
+                      data:
+                        - id: 1
+                          code: '<string>'
+                          module: '<string>'
+                          request_type:
+                            - '<string>'
+                          api_path: '<string>'
+                          status: '<string>'
+                      count: 1
+                  meta:
+                    correlation: '<string>'
+      '400':
+        description: Permission list is empty.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                message:
+                  type: string
+              required:
+                - responseCode
+                - message
+            examples:
+              gap_no_captured_example:
+                summary: 'Per services/permissions.js list() returns PERMISSION_HAS_EMPTY_LIST
+                  when permissions.rows == 0 || permissions.count == 0. No captured
+                  response available. Shape only.'
+                value:
+                  responseCode: '<string>'
+                  message: PERMISSION_HAS_EMPTY_LIST
+      '401':
+        description: Unauthorized - the caller does not have permission to access
+          this resource.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                error:
+                  type: array
+                  items:
+                    type: object
+                meta:
+                  type: object
+                  properties:
+                    correlation:
+                      type: string
+                message:
+                  type: string
+            examples:
+              captured_example:
+                summary: 'Captured from captured-responses.json key "GET /mentoring/v1/permissions/list",
+                  case "actual response: route not under this service base path".
+                  CAVEAT: this was captured by hitting the wrong service base path
+                  (`/mentoring/...` instead of `/user/...`); it is a real, non-fabricated
+                  HTTP response, but it demonstrates this service''s shared auth-middleware
+                  401 shape rather than a confirmed capture of the real `/user/v1/permissions/list`
+                  endpoint.'
+                value:
+                  responseCode: UNAUTHORIZED
+                  error: []
+                  meta:
+                    correlation: a275d632-a7af-4113-8171-bf16d76102a6
+                  message: You do not have the required permissions to access this
+                    resource. Please contact your administrator for assistance.
+delete:
+  '{id}':
+    delete:
+      summary: Delete Permissions
+      description: 'Delete permissions for users.
+
+        - Endpoint: `/user/v1/permissions/delete`.
+
+        - It is mandatory to provide values for parameters marked with `required`.
+
+        - Mandatory parameters cannot be empty or null.
+
+        '
+      operationId: deletePermissions
+      tags: *id001
+      parameters: *id005
+      responses:
+        '202':
+          description: Permission deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties: {}
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+              examples:
+                gap_no_captured_example:
+                  summary: 'No captured response available for this status/message
+                    (captured-responses.json has no matching entry for permissions
+                    delete); schema is types-only (no example values). `result` is
+                    genuinely `{}` per services/permissions.js delete()
+                    (`result: {}`), so that part is code-confirmed.'
+                  x-internal-note: >-
+                    Previous draft example value (correlation UUID) was
+                    fabricated/copied from a sibling domain and has been
+                    removed, including a fabricated meta field matching no
+                    real response field anywhere in the codebase.
+                  value:
+                    responseCode: OK
+                    message: PERMISSION_DELETED_SUCCESSFULLY
+                    result: {}
+                    meta:
+                      correlation: '<string>'
+        '400':
+          description: Permission could not be deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                required:
+                  - responseCode
+                  - message
+              examples:
+                gap_permission_not_deleted:
+                  summary: 'Per services/permissions.js delete() returns PERMISSION_NOT_DELETED
+                    when permissionsQueries.deletePermissionById(id) returns falsy
+                    (permission exists but delete did not persist). No captured
+                    response available. Shape only.'
+                  value:
+                    responseCode: CLIENT_ERROR
+                    message: PERMISSION_NOT_DELETED
+        '500':
+          description: >-
+            Internal Server Error. This is the real, current behavior when no
+            permission exists for the given id — a server-side error is
+            raised instead of a clean 400 in this case.
+          x-internal-note: >-
+            services/permissions.js delete(): when
+            permissionsQueries.findPermissionById(id) returns falsy, the code
+            does a bare `throw new Error('PERMISSION_NOT_FOUND')` (not
+            responses.failureResponse()) - surfaces as a generic 500, not a
+            clean 400. See TODO-reverted-bugfixes.md. (A prior "CORRECTION"
+            note here claimed this was confirmed to be a normal 400 - that
+            was itself wrong; direct source confirms the bare throw is still
+            there.)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: SERVER_ERROR
+                  message:
+                    type: string
+                    example: Oops! Something Went Wrong.
+              example:
+                responseCode: SERVER_ERROR
+                message: Oops! Something Went Wrong.

@@ -1,0 +1,952 @@
+create:
+  post:
+    summary: Create user
+    operationId: createAccount
+    tags:
+      - User APIs
+    security: []
+    description: "This API creates a user account.\n
+      - Endpoint: `/user/v1/account/create`\n
+      - At least one of `email` or `phone` must be provided; `phone_code` is
+      required when `phone` is present.\n
+      - Depending on the tenant's `configuration.allowed_auth_mode`, a
+      `password` may be required (or rejected)."
+    requestBody:
+      required: true
+      description: Request body consist of metadata and accepts payload as JSON
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/createUserRequest
+          examples:
+            withEmail:
+              summary: Create using email (at-least-one-of satisfied)
+              value:
+                name: Nevil Mathew
+                email: mentee@tunerlabs.com
+                password: Password@123
+            withPhone:
+              summary: Create using phone (phone_code required)
+              value:
+                name: Nevil Mathew
+                phone: '9876543210'
+                phone_code: '+91'
+                password: Password@123
+    responses:
+      '201':
+        description: Created. Sign-up successful.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/createUser201Response
+      '406':
+        description: Not Acceptable. User already exists.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/clientErrorResponse
+            examples:
+              userAlreadyExists:
+                summary: Duplicate email/phone/username
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: a8cf416d-c952-45ba-b283-b57bf9113ac7
+                  message: User already exists.
+      '422':
+        description: >-
+          Unprocessable Entity. Cross-field validation failed (neither email
+          nor phone provided).
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/clientErrorResponse
+            examples:
+              missingEmailAndPhone:
+                summary: Neither email nor phone provided
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: dff2a7c1-c903-4876-b403-1b81687239d9
+                  message: At least one of email or phone must be provided
+login:
+  post:
+    summary: Login
+    operationId: login
+    tags:
+      - User APIs
+    security: []
+    description: "This API logs a user in.\n
+      - Endpoint: `/user/v1/account/login`\n
+      - `identifier` is required. At least one of `password` or `otp` must be
+      supplied.\n
+      - Which credential is accepted is additionally gated at runtime by the
+      tenant's `configuration.allowed_auth_mode`; a credential for a disallowed
+      auth mode returns `AUTH_MODE_NOT_ALLOWED`."
+    requestBody:
+      description: Request body for user login
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/loginRequest
+          examples:
+            passwordLogin:
+              summary: Login with password
+              value:
+                identifier: mentee@tunerlabs.com
+                phone_code: '+91'
+                password: Password@123
+            otpLogin:
+              summary: Login with OTP
+              value:
+                identifier: mentee@tunerlabs.com
+                phone_code: '+91'
+                otp: '123456'
+    responses:
+      '200':
+        description: OK. User successfully logged in.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/login200Response
+      '400':
+        description: >-
+          Bad Request. Either neither password nor otp was supplied
+          (AUTH_CREDENTIAL_REQUIRED), or the credentials were invalid.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/clientErrorResponse
+            examples:
+              passwordOrOtpMissing:
+                summary: Neither password nor otp supplied
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: fe4537ed-d8bc-4446-9ec0-f7994a3323a3
+                  message: Password or OTP is required.
+              wrongPassword:
+                summary: Wrong password
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: ccb08b77-ccf6-4f4b-91fb-4287ce248df5
+                  message: Invalid identifier or password. Please check your login credentials.
+              identifierNotFound:
+                summary: Identifier not found
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: bc8053f2-4195-462a-8734-1153efe979db
+                  message: Invalid identifier or password. Please check your login credentials.
+      '422':
+        description: Unprocessable Entity. Request body failed validation.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/validationErrorResponse
+            examples:
+              identifierEmpty:
+                summary: Missing identifier
+                value:
+                  responseCode: CLIENT_ERROR
+                  error:
+                    - location: body
+                      param: identifier
+                      msg: Identifier field is empty
+                  meta:
+                    correlation: ad29b3a6-295d-4059-af71-75e0efecc16d
+                  message: Validation failed, Entered data is incorrect!
+logout:
+  post:
+    summary: Logout
+    operationId: logout
+    tags:
+      - User APIs
+    description: "This API logs a user out.\n
+      - Endpoint: `/user/v1/account/logout`\n
+      - `refresh_token` is required."
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/logoutRequest
+    responses:
+      '200':
+        description: OK. Logout successful.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/logout200Response
+      '422':
+        description: Unprocessable Entity. refresh_token missing.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/validationErrorResponse
+            examples:
+              refreshTokenEmpty:
+                summary: Missing refresh_token
+                value:
+                  responseCode: CLIENT_ERROR
+                  error:
+                    - location: body
+                      param: refresh_token
+                      msg: refresh_token field is empty
+                  meta:
+                    correlation: 6b915f8e-2c7d-4d17-88ec-9af3633db8cc
+                  message: Validation failed, Entered data is incorrect!
+generateToken:
+  post:
+    summary: Generate Access Token
+    operationId: generateToken
+    tags:
+      - User APIs
+    description: "This API generates an access token from a refresh token.\n
+      - Endpoint: `/user/v1/account/generateToken`\n
+      - `refresh_token` is required."
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/generateTokenRequest
+    responses:
+      '200':
+        description: OK. Access token generated successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/generateToken200Response
+      '401':
+        description: Unauthorized. Refresh token invalid or session expired.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/clientErrorResponse
+            examples:
+              invalidRefreshToken:
+                summary: Invalid refresh_token (captured)
+                value:
+                  responseCode: SERVER_ERROR
+                  error: []
+                  meta:
+                    correlation: ee806225-32cd-449a-b67c-2030c0818348
+                  message: Oops! Your session has expired. Please log in again.
+      '422':
+        description: Unprocessable Entity. refresh_token missing.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/validationErrorResponse
+            examples:
+              refreshTokenEmpty:
+                summary: Missing refresh_token
+                value:
+                  responseCode: CLIENT_ERROR
+                  error:
+                    - location: body
+                      param: refresh_token
+                      msg: refresh_token field is empty
+                  meta:
+                    correlation: 12a3aa85-1f2b-4d35-b4cf-5bf889f633a3
+                  message: Validation failed, Entered data is incorrect!
+generateOtp:
+  post:
+    summary: Generate OTP
+    operationId: generateOtp
+    tags:
+      - User APIs
+    description: "This API generates an OTP (used in password reset).\n
+      - Endpoint: `/user/v1/account/generateOtp`\n
+      - `identifier` and `password` are required."
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/generateOtpRequest
+    responses:
+      '200':
+        description: OK. OTP generated successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/generateOtp200Response
+      '422':
+        description: Unprocessable Entity. Request body failed validation.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/validationErrorResponse
+            examples:
+              passwordEmpty:
+                summary: Missing password
+                value:
+                  responseCode: CLIENT_ERROR
+                  error:
+                    - location: body
+                      param: password
+                      msg: password field is empty
+                  meta:
+                    correlation: b94f9de3-ea1e-4586-8f63-df2f7007dd69
+                  message: Validation failed, Entered data is incorrect!
+resetPassword:
+  post:
+    summary: Reset Password
+    operationId: resetPassword
+    tags:
+      - User APIs
+    description: "This API resets a user's password.\n
+      - Endpoint: `/user/v1/account/resetPassword`\n
+      - `identifier`, `password`, and `otp` are all required."
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/resetPasswordRequest
+    responses:
+      '200':
+        description: >-
+          OK. Password reset successfully. Returns the same session tokens
+          and user object as the login response.
+        x-internal-note: >-
+          services/account.js `resetPassword`, message key
+          PASSWORD_RESET_SUCCESSFULLY. No captured example exists for this
+          status on this endpoint in captured-responses.json - shape reused
+          from the verbatim-captured login200Response, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/login200Response
+      '400':
+        description: Bad Request. Invalid or incorrect OTP.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/clientErrorResponse
+            examples:
+              invalidOtp:
+                summary: Incorrect OTP
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: 10a26438-b7dd-4d79-bd71-5c5fc84d738e
+                  message: Please enter the correct OTP.
+      '422':
+        description: Unprocessable Entity. Request body failed validation.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/validationErrorResponse
+            examples:
+              otpEmpty:
+                summary: Missing/invalid otp
+                value:
+                  responseCode: CLIENT_ERROR
+                  error:
+                    - location: body
+                      param: otp
+                      msg: otp field is empty
+                    - location: body
+                      param: otp
+                      msg: otp should be number
+                    - location: body
+                      param: otp
+                      msg: otp is invalid
+                  meta:
+                    correlation: cb21a62c-1e9c-46cc-8b14-ba461eaa684b
+                  message: Validation failed, Entered data is incorrect!
+registrationOtp:
+  post:
+    summary: Registration OTP
+    operationId: registrationOtp
+    tags:
+      - User APIs
+    description: "This API sends a registration OTP.\n
+      - Endpoint: `/user/v1/account/registrationOtp`\n
+      - `registration_code` is required; at least one of `email`, `phone`, or
+      `username` must be provided (`phone_code` required with `phone`)."
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/registrationOtpRequest
+          examples:
+            withEmail:
+              summary: Registration via email
+              value:
+                email: mentee@tunerlabs.com
+                registration_code: org-signup-code
+            withPhone:
+              summary: Registration via phone (phone_code required)
+              value:
+                phone: '9876543210'
+                phone_code: '+91'
+                registration_code: org-signup-code
+            withUsername:
+              summary: Registration via username
+              value:
+                username: mentee_new
+                registration_code: org-signup-code
+    responses:
+      '200':
+        description: OK. Registration OTP sent successfully.
+        x-internal-note: >-
+          services/account.js `registrationOtp`, message key
+          REGISTRATION_OTP_SENT_SUCCESSFULLY. No captured example exists for
+          this status on this endpoint - schema reused from the
+          verbatim-captured generateOtp200Response (identical response
+          shape), not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/generateOtp200Response
+      '400':
+        description: Bad Request. Invalid organization registration code.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/clientErrorResponse
+            examples:
+              invalidRegistrationCode:
+                summary: registration_code not valid for org
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: b28d7ea7-fd7a-4868-8acf-f5a9d9c7b52f
+                  message: INVALID_ORG_registration_code
+      '422':
+        description: >-
+          Unprocessable Entity. Cross-field validation failed (none of email,
+          phone, username provided).
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/clientErrorResponse
+            examples:
+              missingIdentity:
+                summary: None of email/phone/username provided
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: 28c857c1-4dbb-410a-92ab-83b152b7ef15
+                  message: At least one of email, phone, or username must be provided
+delete:
+  delete:
+    summary: Delete Own Account
+    operationId: deleteAccount
+    tags:
+      - User APIs
+    description: "This API deletes the authenticated user's own account.\n
+      - Endpoint: `/user/v1/account/delete`\n
+      - `password` is required for confirmation."
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/deleteRequest
+    responses:
+      '200':
+        description: OK. Account deleted successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/delete200Response
+      '422':
+        description: Unprocessable Entity. password missing.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/validationErrorResponse
+            examples:
+              passwordEmpty:
+                summary: Missing password
+                value:
+                  responseCode: CLIENT_ERROR
+                  error:
+                    - location: body
+                      param: password
+                      msg: password field is empty
+                  meta:
+                    correlation: 38d23e40-72d9-439d-8133-749437eb8a1b
+                  message: Validation failed, Entered data is incorrect!
+changePassword:
+  post:
+    summary: Change Password
+    operationId: changePassword
+    tags:
+      - User APIs
+    description: "This API changes the authenticated user's password.\n
+      - Endpoint: `/user/v1/account/changePassword`\n
+      - `oldPassword` and `newPassword` are required."
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/changePasswordRequest
+    responses:
+      '200':
+        description: OK. Password changed successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/changePassword200Response
+      '401':
+        description: Unauthorized. Session expired or the auth token is invalid.
+        x-internal-note: >-
+          Captured for both missing newPassword and wrong oldPassword cases -
+          the session-layer responded 401 in both.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/unauthorizedResponse
+            examples:
+              sessionExpired:
+                summary: Session expired
+                value:
+                  responseCode: UNAUTHORIZED
+                  error: []
+                  meta:
+                    correlation: 1fb56dbc-b9aa-45f9-aef8-45e17453d152
+                  message: Session expired. Please login again.
+changeRole:
+  post:
+    summary: Change Role
+    operationId: changeRole
+    tags:
+      - User APIs
+    description: "This API changes a user's role.\n
+      - Endpoint: `/user/v1/account/changeRole`\n
+      - `email` and `role` are required."
+    x-internal-note: >-
+      No live captured response body was available for this endpoint, so no
+      response examples are provided (see gaps.jsonl).
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/changeRoleRequest
+    responses:
+      '200':
+        description: OK. Role updated successfully.
+        x-internal-note: >-
+          Shape not verified against a captured response (no capture
+          available for this endpoint).
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/clientErrorResponse
+      '400':
+        description: >-
+          Bad Request. Returned when the specified role does not exist for
+          the tenant, the caller's token does not resolve to a valid user, or
+          the target user does not exist.
+        x-internal-note: >-
+          services/account.js `changeRole` returns this for three distinct
+          causes: ROLE_NOT_FOUND, USER_NOT_FOUND, or USER_DOESNOT_EXISTS. No
+          captured example exists for this status on this endpoint - shape
+          only, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/clientErrorResponse
+validatingEmailIds:
+  post:
+    summary: Validate Email IDs
+    operationId: validatingEmailIds
+    tags:
+      - User APIs
+    description: "This API validates a list of email IDs.\n
+      - Endpoint: `/user/v1/account/validatingEmailIds`\n
+      - `emailIds` (non-empty array of valid emails) is required."
+    x-internal-note: >-
+      No live captured response body was available for this endpoint (see
+      gaps.jsonl).
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/validatingEmailIdsRequest
+    responses:
+      '200':
+        description: OK. Emails validated successfully.
+        x-internal-note: >-
+          Shape not verified against a captured response (no capture
+          available for this endpoint).
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/clientErrorResponse
+      '422':
+        description: >-
+          Unprocessable Entity. `emailIds` is missing, empty, or contains
+          values that are not valid email addresses.
+        x-internal-note: >-
+          Validated in validators/v1/account.js `validatingEmailIds`. No
+          captured example exists for this status on this endpoint - shape
+          reused from the standard validationErrorResponse envelope used
+          elsewhere in this domain, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/validationErrorResponse
+acceptTermsAndCondition:
+  patch:
+    summary: Terms & Condition
+    operationId: acceptTermsAndCondition
+    tags:
+      - Depreciated APIs
+    description: "This API accepts terms and conditions for the authenticated user.\n
+      - Endpoint: `/user/v1/account/acceptTermsAndCondition`\n
+      - Requires a valid X-auth-token."
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: OK. Terms and conditions accepted successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/acceptTermsAndCondition200Response
+      '401':
+        description: Unauthorized. Invalid token.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/unauthorizedResponse
+            examples:
+              invalidToken:
+                summary: Invalid token
+                value:
+                  responseCode: UNAUTHORIZED
+                  error: []
+                  meta:
+                    correlation: 1ab51a89-98b4-4aaf-b0ff-2329c72bd827
+                  message: Unauthorized request
+      '500':
+        description: Internal Server Error. Returned when an unexpected server-side failure occurs.
+        x-internal-note: Captured when the token was missing.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/serverErrorResponse
+            examples:
+              missingToken:
+                summary: Missing token
+                value:
+                  responseCode: SERVER_ERROR
+                  message: Oops! Something Went Wrong.
+                  meta:
+                    correlation: d236ae52-5c18-4bd5-a727-33aa34a0d811
+sessions:
+  post:
+    summary: List Sessions
+    operationId: sessions
+    tags:
+      - User APIs
+    description: "This API lists the authenticated user's sessions.\n
+      - Endpoint: `/user/v1/account/sessions`"
+    x-internal-note: Served by services/user-sessions.js (out of account scope).
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: status
+        description: Optional session status filter (e.g. ACTIVE).
+        required: false
+        schema:
+          type: string
+      - in: query
+        name: period
+        description: Optional time period filter.
+        required: false
+        schema:
+          type: string
+    responses:
+      '201':
+        description: OK. User sessions fetched successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/sessions201Response
+      '401':
+        description: Unauthorized. X-auth-token is either missing or invalid.
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape reused from the standard unauthorizedResponse envelope used
+          elsewhere in this domain, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/unauthorizedResponse
+validateUserSession:
+  post:
+    summary: Validate User Session
+    operationId: validateUserSession
+    tags:
+      - User APIs
+    security: []
+    description: "This API validates a user session by token.\n
+      - Endpoint: `/user/v1/account/validateUserSession`"
+    x-internal-note: Served by services/user-sessions.js (out of account scope).
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/validateUserSessionRequest
+    responses:
+      '200':
+        description: OK. User session validated successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/validateUserSession200Response
+      '401':
+        description: Unauthorized. Missing internal access token.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/unauthorizedResponse
+            examples:
+              missingInternalToken:
+                summary: Missing internal_access_token
+                value:
+                  responseCode: UNAUTHORIZED
+                  error: []
+                  meta:
+                    correlation: a32eafe3-9549-4cd3-b7c3-281c001b1cda
+                  message: Unauthorized request
+list:
+  get:
+    summary: List user
+    operationId: listAccount
+    tags:
+      - Users APIs
+    description: "This API lists users.\n
+      - Endpoint: `/user/v1/account/list`\n
+      - `type` query parameter is required."
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: type
+        description: Type of user (e.g. mentor, mentee).
+        required: true
+        schema:
+          type: string
+        example: mentor
+      - in: query
+        name: page
+        description: Page number for pagination.
+        required: false
+        schema:
+          type: number
+        example: 1
+      - in: query
+        name: limit
+        description: Number of records to limit.
+        required: false
+        schema:
+          type: number
+        example: 2
+      - in: query
+        name: search
+        description: Search for name or title of user.
+        required: false
+        schema:
+          type: string
+        example: john
+    responses:
+      '200':
+        description: OK. User list fetched successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/list200Response
+      '401':
+        description: Unauthorized. Missing/invalid token.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/unauthorizedResponse
+            examples:
+              missingToken:
+                summary: Missing token
+                value:
+                  responseCode: UNAUTHORIZED
+                  error: []
+                  meta:
+                    correlation: 6ed63066-4a64-4131-a2ff-b5a14e84c6fb
+                  message: Unauthorized request
+search:
+  get:
+    summary: Search User
+    operationId: search
+    tags:
+      - Users APIs
+    description: "This API searches users.\n
+      - Endpoint: `/user/v1/account/search`\n
+      - `tenant_code`, `type`, and `organization_id` are required query
+      parameters; `user_ids` and `excluded_user_ids` are required in the body."
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token from the login API response.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: tenant_code
+        description: Tenant code.
+        required: true
+        schema:
+          type: string
+        example: default
+      - in: query
+        name: type
+        description: >-
+          Valid user type (mentee, mentor, session_manager, org_admin, reviewer),
+          or `all`.
+        required: true
+        schema:
+          type: string
+        example: mentor
+      - in: query
+        name: organization_id
+        description: Organization ID.
+        required: true
+        schema:
+          type: number
+        example: 1
+      - in: query
+        name: page
+        description: Page number for pagination.
+        required: false
+        schema:
+          type: number
+        example: 1
+      - in: query
+        name: limit
+        description: Number of records to limit.
+        required: false
+        schema:
+          type: number
+        example: 2
+      - in: query
+        name: search
+        description: Search for the name or title of the user.
+        required: false
+        schema:
+          type: string
+        example: john
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/account.yaml#/searchRequest
+          examples:
+            withUsersAndExclusions:
+              summary: Search with included and excluded user IDs
+              value:
+                user_ids: [22, 23]
+                excluded_user_ids: [24]
+    responses:
+      '200':
+        description: OK. User list fetched successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/search200Response
+      '401':
+        description: Unauthorized. X-auth-token is either missing or invalid.
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape reused from the standard unauthorizedResponse envelope used
+          elsewhere in this domain, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/unauthorizedResponse

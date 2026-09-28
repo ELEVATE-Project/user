@@ -1,0 +1,452 @@
+# Paths for the userRole domain.
+#
+# Ground truth: validators/v1/user-role.js, controllers/v1/user-role.js,
+# services/user-role.js, and scripts/api-doc/captured-responses.json.
+#
+# Actual mounted route pattern (src/routes/index.js) is a generic dispatcher:
+#   /:version/:controller/:method[/:id]
+# registered with app.all(...), meaning ALL HTTP verbs are technically routed to the
+# same handler and the verb itself is not checked by the framework. The verbs below
+# (GET for list, POST for create) are confirmed by captured-responses.json request keys
+# ("GET /user/v1/user-role/list", "POST /user/v1/user-role/create"). update/delete have
+# NO captured traffic, so their HTTP verbs (POST, DELETE) are carried over from the
+# pre-existing draft as a convention match with sibling domains, NOT independently
+# confirmed here - flagged in gaps.jsonl.
+#
+# cross-field-rules.json: both controllers/v1/user-role.js and services/user-role.js are
+# listed under "zero_match_files" - no cross-field (oneOf/anyOf) constraints apply to
+# this domain.
+
+list:
+  get:
+    summary: Get User Roles
+    operationId: listUserRole
+    tags:
+      - User Roles APIs
+    description: >-
+      Retrieve the list of user roles.
+
+
+      - Endpoint: `/user/v1/user-role/list`
+
+      - It is mandatory to provide values for parameters marked as `required`.
+
+      - The X-auth-token obtained from the login API is required in the header.
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token obtained from the login API response.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: page
+        description: Page number.
+        schema:
+          type: integer
+      - in: query
+        name: limit
+        description: Number of records to limit.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        description: Search text matched against 'title' (case-insensitive, substring).
+        schema:
+          type: string
+      - in: query
+        name: language
+        description: >-
+          Optional. When provided and not 'en', role labels are localized via
+          translations; when omitted or 'en', the translations field is stripped from
+          each result row.
+        schema:
+          type: string
+      - in: query
+        name: title
+        description: Optional filter. Must match ^[a-z_]+$.
+        required: false
+        schema:
+          type: string
+          pattern: ^[a-z_]+$
+      - in: query
+        name: user_type
+        description: Optional filter. '0' (non-admin) or '1' (admin).
+        required: false
+        schema:
+          type: string
+          enum: ['0', '1']
+      - in: query
+        name: visibility
+        description: Optional filter. Only 'PUBLIC' is accepted.
+        required: false
+        schema:
+          type: string
+          enum: [PUBLIC]
+      - in: query
+        name: status
+        description: Optional filter. ACTIVE or INACTIVE.
+        required: false
+        schema:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+      - in: query
+        name: organization_id
+        description: Optional filter. Must be numeric.
+        required: false
+        schema:
+          type: string
+          pattern: ^[0-9]+$
+    requestBody:
+      description: ''
+      content: {}
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userRole.yaml#/UserRoleListResponse200
+            examples:
+              example1:
+                summary: Captured - happy path (captured-responses.json)
+                value:
+                  responseCode: OK
+                  message: Roles fetched successfully.
+                  result:
+                    data:
+                      - id: 1
+                        title: session_manager
+                        user_type: 0
+                        visibility: PUBLIC
+                        label: Session Manager
+                        status: ACTIVE
+                        organization_id: 1
+                        tenant_code: default
+                      - id: 8
+                        title: org_admin
+                        user_type: 1
+                        visibility: PUBLIC
+                        label: null
+                        status: ACTIVE
+                        organization_id: 1
+                        tenant_code: default
+                    count: 10
+                  meta:
+                    formsVersion:
+                      - id: 1
+                        type: formsrggjf
+                        version: 0
+                      - id: 3
+                        type: formcsfgof
+                        version: 0
+                    correlation: 42ca997d-9219-4cf8-93ef-b7e55cb8f7b4
+      '400':
+        description: Bad Request - empty result set (ROLES_HAS_EMPTY_LIST)
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userRole.yaml#/UserRoleListEmpty400
+        # No captured example for this status/message on this endpoint. Shape-only. See gaps.jsonl.
+      '401':
+        description: Unauthorized - missing/invalid X-auth-token
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userRole.yaml#/UserRoleListUnauthorized401
+            examples:
+              example1:
+                summary: Captured - missing token (captured-responses.json)
+                value:
+                  responseCode: UNAUTHORIZED
+                  error: []
+                  meta:
+                    correlation: 86f75782-5711-44fc-bed7-48e348ebc76d
+                  message: You do not have the required permissions to access this resource. Please contact your administrator for assistance.
+
+Create:
+  post:
+    summary: Create User Role
+    operationId: createUserRole
+    description: >-
+      Create a role.
+
+      - Endpoint: `/user/v1/user-role/create`.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+    tags:
+      - User Roles APIs
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the user.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/userRole.yaml#/UserRoleCreateRequest
+          examples:
+            example1:
+              summary: Minimal required fields
+              value:
+                title: head_master
+                user_type: '1'
+                visibility: PUBLIC
+                label: Head Master
+            example2:
+              summary: With optional status
+              value:
+                title: head_master
+                user_type: '1'
+                visibility: PUBLIC
+                label: Head Master
+                status: ACTIVE
+    responses:
+      '201':
+        description: Created
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userRole.yaml#/UserRoleCreateResponse201
+            examples:
+              example1:
+                summary: Captured (captured-responses.json)
+                value:
+                  responseCode: OK
+                  message: Role created successfully.
+                  result:
+                    id: 30
+                    title: role_cfmnwn
+                    user_type: 0
+                    status: ACTIVE
+                    visibility: PUBLIC
+                    organization_id: 1
+                    tenant_code: default
+                    translations: null
+                  meta:
+                    formsVersion:
+                      - id: 1
+                        type: formsrggjf
+                        version: 0
+                    correlation: 78d9dec1-7752-4b82-8cb5-320fbebc3f71
+      '500':
+        description: >-
+          Internal Server Error. This is the real, current behavior when a
+          role with the same title already exists - a server misconfiguration
+          causes this case to raise a 500 instead of a clean 409. The
+          response body still carries the original
+          CLIENT_ERROR/ROLE_IS_NOT_UNIQUE content, only the HTTP status is
+          affected.
+        x-internal-note: >-
+          services/user-role.js create() sets `statusCode:
+          httpStatusCode.conflict` on the ROLE_IS_NOT_UNIQUE failure path, but
+          generics/http-status.js has no `conflict` key at all - it's
+          `undefined`. responses.failureResponse's `statusCode = 500` default
+          parameter then kicks in for that explicit `undefined`, while
+          message/responseCode pass through unchanged, so this documented 409
+          never actually happens; real clients get HTTP 500 with a
+          CLIENT_ERROR/ROLE_IS_NOT_UNIQUE body. See TODO-reverted-bugfixes.md.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userRole.yaml#/UserRoleCreate500Response
+        # No captured example for this status/message. Shape-only. See gaps.jsonl.
+      '401':
+        description: Unauthorized
+        x-internal-note: >-
+          No captured example specific to this endpoint for 401; schema reused
+          from list's confirmed 401 shape, as this is a generic
+          authenticator-middleware response. See gaps.jsonl.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/profile.yaml#/Unauthorized401Response
+
+update:
+  '{id}':
+    post:
+      summary: Update User Role
+      operationId: updateUserRole
+      tags:
+        - User Roles APIs
+      description: >-
+        Update a role by id.
+
+        - Endpoint: `/user/v1/user-role/update/{id}`
+
+        - Provide values for parameters marked as `required`.
+
+        - The X-auth-token is mandatory and cannot be empty or null.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token obtained from the login API response.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Role id to update.
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userRole.yaml#/UserRoleUpdateRequest
+            examples:
+              example1:
+                summary: Required fields plus optional label/status
+                value:
+                  title: head_master
+                  user_type: '1'
+                  visibility: PUBLIC
+                  label: Head Master
+                  status: ACTIVE
+      responses:
+        '201':
+          description: OK - role updated (ROLE_UPDATED_SUCCESSFULLY)
+          content:
+            application/json:
+              schema:
+                $ref: ../components/userRole.yaml#/UserRoleUpdateResponse201
+          # No captured example exists for update on any status code. Shape-only, no
+          # example values asserted. See gaps.jsonl.
+        '400':
+          description: Bad Request - nothing was updated (ROLE_NOT_UPDATED)
+          content:
+            application/json:
+              schema:
+                $ref: ../components/userRole.yaml#/UserRoleUpdateBadRequest400
+          # No captured example. Shape-only. See gaps.jsonl.
+        '500':
+          description: >-
+            Internal Server Error. This is the real, current behavior when
+            the update would result in a duplicate role title - a server
+            misconfiguration causes this case to raise a 500 instead of a
+            clean 409. The response body still carries the original
+            CLIENT_ERROR/ROLE_IS_NOT_UNIQUE content, only the HTTP status is
+            affected.
+          x-internal-note: >-
+            services/user-role.js update() sets `statusCode:
+            httpStatusCode.conflict` on the ROLE_IS_NOT_UNIQUE failure path,
+            but generics/http-status.js has no `conflict` key at all - it's
+            `undefined`. responses.failureResponse's `statusCode = 500`
+            default parameter then kicks in for that explicit `undefined`,
+            while message/responseCode pass through unchanged, so this
+            documented 409 never actually happens; real clients get HTTP 500
+            with a CLIENT_ERROR/ROLE_IS_NOT_UNIQUE body. See
+            TODO-reverted-bugfixes.md.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/userRole.yaml#/UserRoleUpdate500Response
+          # No captured example. Shape-only. See gaps.jsonl.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: ../components/profile.yaml#/Unauthorized401Response
+          # No captured example specific to this endpoint. See gaps.jsonl.
+
+delete:
+  '{id}':
+    delete:
+      summary: Delete User Role
+      operationId: deleteUserRole
+      tags:
+        - User Roles APIs
+      description: >-
+        Delete a role by id.
+
+        - Endpoint: `/user/v1/user-role/delete/{id}`.
+
+        - It is mandatory to provide values for parameters marked with `required`.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: X-auth-token obtained from the login API response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          description: Role id to delete.
+          schema:
+            type: integer
+          example: 31
+      responses:
+        '202':
+          description: Accepted - role deleted (ROLE_DELETED_SUCCESSFULLY)
+          content:
+            application/json:
+              schema:
+                $ref: ../components/userRole.yaml#/UserRoleDeleteResponse202
+          # No captured example exists for delete on any status code. Shape-only, no
+          # example values asserted. See gaps.jsonl.
+        '400':
+          description: Bad Request - already deleted or not present (ROLE_ALREADY_DELETED_OR_ROLE_NOT_PRESENT)
+          content:
+            application/json:
+              schema:
+                $ref: ../components/userRole.yaml#/UserRoleDeleteBadRequest400
+          # No captured example. Shape-only. See gaps.jsonl.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: ../components/profile.yaml#/Unauthorized401Response
+          # No captured example specific to this endpoint. See gaps.jsonl.
+
+default:
+  get:
+    deprecated: true
+    summary: Default Role List (Deprecated)
+    tags:
+      - User Roles APIs
+    description: >-
+      This endpoint is deprecated and no longer available. Any request made to
+      it currently returns a 404 Not Found response. Use the list endpoint
+      instead.
+    x-internal-note: >-
+      The `default` controller method is commented out in
+      controllers/v1/user-role.js (marked @deprecated - "Use list() instead").
+      Requests fall through the generic router (src/routes/index.js) to the
+      global 404 handler because no such method exists on the controller.
+      Confirmed by captured-responses.json, which shows a 404 for every
+      observed call. Retained in the spec for completeness only.
+    parameters:
+      - name: X-auth-token
+        in: header
+        required: true
+        schema:
+          type: string
+    responses:
+      '404':
+        description: Not Found. This endpoint always returns this response.
+        x-internal-note: >-
+          Reflects dead code on the backend - the underlying controller
+          method no longer exists, so every request falls through to the
+          global 404 handler.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userRole.yaml#/UserRoleDeprecatedDefaultNotFound404
+            examples:
+              example1:
+                summary: Captured (captured-responses.json)
+                value:
+                  responseCode: RESOURCE_ERROR
+                  message: Requested resource not found!

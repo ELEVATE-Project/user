@@ -1,0 +1,283 @@
+template:
+  post:
+    summary: Create a notification template
+    operationId: createNotificationTemplate
+    tags:
+      - Notification APIs
+    description: >-
+      Creates a notification template.
+
+      - Endpoint: `/user/v1/notification/template`.
+
+      - Caller must hold one of `ADMIN`, `ORG_ADMIN` or `TENANT_ADMIN` roles.
+
+      - `type`, `code`, `subject` and `body` are mandatory and cannot be empty or null.
+
+      - `code` must be unique per organization + tenant.
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token required to use the API. Available in the login API response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/notification.yaml#/createNotificationRequest
+    responses:
+      '201':
+        description: Created
+        content:
+          application/json:
+            schema:
+              $ref: ../components/notification.yaml#/createNotification201Response
+      '400':
+        description: Bad Request (caller is not an admin).
+        content:
+          application/json:
+            schema:
+              $ref: ../components/notification.yaml#/notAdmin400Response
+      '500':
+        description: >-
+          Internal Server Error. Also covers a real bug: attempting to
+          create a template with a `code` that already exists for the
+          org/tenant should return a clean 409
+          (NOTIFICATION_TEMPLATE_ALREADY_EXISTS) but instead surfaces here as
+          a 500, because services/notification.js sets `statusCode:
+          httpStatusCode.conflict`, which is `undefined` (no `conflict` key
+          exists in generics/http-status.js) — see the
+          gap_template_already_exists example below. The response body in
+          that case still carries the original
+          CLIENT_ERROR/NOTIFICATION_TEMPLATE_ALREADY_EXISTS content, not the
+          generic server-error shape.
+        x-internal-note: >-
+          services/notification.js create() sets `statusCode:
+          httpStatusCode.conflict` on the NOTIFICATION_TEMPLATE_ALREADY_EXISTS
+          failure path, but generics/http-status.js has no `conflict` key at
+          all - it's `undefined`. responses.failureResponse's `statusCode =
+          500` default parameter then kicks in for that explicit `undefined`,
+          while message/responseCode pass through unchanged, so the
+          documented 409 never actually happens; real clients get HTTP 500
+          with a CLIENT_ERROR/NOTIFICATION_TEMPLATE_ALREADY_EXISTS body. Same
+          root cause as the identical bug in services/user-role.js — see
+          TODO-reverted-bugfixes.md.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/notification.yaml#/serverError500Response
+            examples:
+              genericServerError:
+                summary: Unhandled server error (generic).
+                value:
+                  responseCode: SERVER_ERROR
+                  message: Oops! Something Went Wrong.
+                  meta:
+                    correlation: 12923198-0cb9-4137-8a25-5f8db4e45fa3
+              gap_template_already_exists:
+                summary: >-
+                  Returned when a template with the same code already exists
+                  (real bug, not the intended 409 — see description above).
+                value:
+                  responseCode: CLIENT_ERROR
+                  message: NOTIFICATION_TEMPLATE_ALREADY_EXISTS
+  get:
+    summary: List notification templates
+    operationId: listNotificationTemplates
+    tags:
+      - Notification APIs
+    description: >-
+      Fetches notification templates for the caller's organization + tenant.
+
+      - Endpoint: `/user/v1/notification/template`.
+
+      - When called with no `id` path param and no `code` query param, all
+        templates are returned.
+
+      - Optionally filter by `code` and/or `type` query params. If no template
+        matches, the default organization's templates are returned as a fallback.
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token required to use the API. Available in the login API response.
+        required: true
+        schema:
+          type: string
+      - name: code
+        in: query
+        description: Filter by template code.
+        required: false
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: Filter by template type.
+        required: false
+        schema:
+          type: string
+          enum:
+            - sms
+            - email
+            - emailHeader
+            - emailFooter
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: ../components/notification.yaml#/listNotification200Response
+      '400':
+        description: Bad Request (caller is not an admin).
+        content:
+          application/json:
+            schema:
+              $ref: ../components/notification.yaml#/notAdmin400Response
+
+templateById:
+  get:
+    summary: Read a notification template by id
+    operationId: getNotificationTemplateById
+    tags:
+      - Notification APIs
+    description: >-
+      Fetches a single notification template by its `id`.
+
+      - Endpoint: `/user/v1/notification/template/{id}`.
+
+      - Either the `id` path param or the `code` query param identifies the
+        template; when neither is present the list endpoint behaviour applies.
+
+      - If no template matches for the caller's organization, the default
+        organization's template is returned as a fallback; if still none, a
+        `400` "not found" is returned.
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token required to use the API. Available in the login API response.
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: Notification template id.
+        required: true
+        schema:
+          type: integer
+      - name: type
+        in: query
+        description: Filter by template type.
+        required: false
+        schema:
+          type: string
+          enum:
+            - sms
+            - email
+            - emailHeader
+            - emailFooter
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: ../components/notification.yaml#/listNotification200Response
+      '400':
+        description: >-
+          Bad Request. Returned when either the template was not found, or
+          the caller does not have admin privileges.
+        x-internal-note: >-
+          Two distinct causes share this status code on this endpoint: the
+          template-not-found branch has a captured example available; the
+          not-admin branch (USER_IS_NOT_A_ADMIN) has no captured example -
+          schema is shape-only.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: ../components/notification.yaml#/notFound400Response
+                - $ref: ../components/notification.yaml#/notAdmin400Response
+            examples:
+              templateNotFound:
+                summary: Template not found (captured)
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: d04c2435-f127-46bc-a795-f970b45e63ca
+                  message: Notification template not found
+              # "notAdmin" branch intentionally has no example here: see
+              # x-internal-note on this response's description above.
+  patch:
+    summary: Update a notification template
+    operationId: updateNotificationTemplate
+    tags:
+      - Notification APIs
+    description: >-
+      Updates a notification template.
+
+      - Endpoint: `/user/v1/notification/template/{id}`.
+
+      - Caller must hold one of `ADMIN`, `ORG_ADMIN` or `TENANT_ADMIN` roles.
+
+      - The template is located by the `id` path param; when `id` is absent the
+        `code` in the request body is used instead.
+
+      - `type`, `code`, `subject` and `body` are mandatory and cannot be empty or null.
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token required to use the API. Available in the login API response.
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: Notification template id.
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/notification.yaml#/createNotificationRequest
+    responses:
+      '202':
+        description: Accepted
+        content:
+          application/json:
+            schema:
+              $ref: ../components/notification.yaml#/updateNotification202Response
+      '400':
+        description: >-
+          Bad Request. Returned when either the template was not found, or
+          the caller does not have admin privileges.
+        x-internal-note: >-
+          Two distinct causes share this status code on this endpoint: the
+          template-not-found branch's captured example was taken from the
+          sibling GET-by-id endpoint, which throws the identical
+          responses.failureResponse({message: 'NOTIFICATION_TEMPLATE_NOT_FOUND',
+          statusCode: 400, responseCode: 'CLIENT_ERROR'}) call in
+          services/notification.js, reused by update(); the not-admin branch
+          has no captured example for this branch - shape-only.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: ../components/notification.yaml#/notFound400Response
+                - $ref: ../components/notification.yaml#/notAdmin400Response
+            examples:
+              templateNotFound:
+                summary: Template not found (captured)
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: d04c2435-f127-46bc-a795-f970b45e63ca
+                  message: Notification template not found
+              # "notAdmin" branch intentionally has no example here: see
+              # x-internal-note on this response's description above.

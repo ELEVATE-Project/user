@@ -526,6 +526,16 @@ let enviromentVariables = {
 		optional: true,
 		default: false,
 	},
+	NAME_REGEX: {
+		message: 'Required NAME_REGEX',
+		optional: true,
+		default: '^[A-Za-z\\u0900-\\u0DFF\\u1C50-\\u1C7F\\uA880-\\uA8DF\\uAAE0-\\uAAFF\\uABC0-\\uABFF\\s.,\\-]+$',
+	},
+	NAME_REGEX_MESSAGE: {
+		message: 'Required NAME_REGEX_MESSAGE',
+		optional: true,
+		default: 'Name must contain only letters, spaces, and the following special characters: . , -',
+	},
 }
 let success = true
 

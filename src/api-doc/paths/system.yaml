@@ -1,0 +1,185 @@
+health:
+  get:
+    summary: Service health status.
+    description:
+      "This API is used to verify the health status of the user Service and its dependencies (Kafka, Redis, and downstream microservices such as EntityManagementService and SchedulerService).\
+      \ \n* The API Endpoint for health check is /user/health\n* Both query parameters below are optional; there is no request body and no field-level validation for this endpoint"
+    operationId: healthCheck
+    tags:
+      - Health Check
+    parameters:
+      - name: basicCheck
+        in: query
+        required: false
+        description: When set to a truthy value, skips the downstream microservice checks (EntityManagementService, SchedulerService) and only reports on directly-configured dependencies (Kafka, Redis). Read from req.query.basicCheck in health-checks/health-check.js.
+        schema:
+          type: boolean
+      - name: serviceName
+        in: query
+        required: false
+        description: Name of the calling service. Used only to avoid a self-check loop -- if a configured microservice's name matches this value, that microservice's check is skipped. Read from req.query.serviceName in health-checks/health-check.js.
+        schema:
+          type: string
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Fixed identifier returned by the elevate-services-health-check package ("service.health.api").
+                version:
+                  type: string
+                  description: Version of the calling service's package.json (passed in as packageFile.version), NOT "ver".
+                ts:
+                  type: string
+                params:
+                  type: object
+                  properties:
+                    resmsgid:
+                      type: string
+                    msgid:
+                      type: string
+                    status:
+                      type: string
+                    err:
+                      type: string
+                      nullable: true
+                      example: null
+                    errMsg:
+                      type: string
+                      nullable: true
+                      example: null
+                status:
+                  type: number
+                result:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: config.name (health.config.js), i.e. process.env.SERVICE_NAME.
+                    version:
+                      type: string
+                      description: config.version from health.config.js; health.config.js does not currently define a `version` key, so this field is typically absent/undefined in practice -- see gap.
+                    healthy:
+                      type: boolean
+                    checks:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          healthy:
+                            type: boolean
+                          err:
+                            type: string
+                          errMsg:
+                            type: string
+                        required:
+                          - name
+                          - healthy
+                          - err
+                          - errMsg
+            examples:
+              Success Response:
+                value:
+                  id: service.health.api
+                  version: 3.3.24
+                  ts: '2025-07-18T06:26:10.726Z'
+                  params:
+                    resmsgid: 189bdb70-63a0-11f0-b86a-3b7c197fc982
+                    msgid: 189bdb71-63a0-11f0-b86a-3b7c197fc982
+                    status: successful
+                    err: null
+                    errMsg: null
+                  status: 200
+                  result:
+                    name: UserService
+                    healthy: true
+                    checks:
+                      - name: Kafka
+                        healthy: true
+                        err: ''
+                        errMsg: ''
+                      - name: redis
+                        healthy: true
+                        err: ''
+                        errMsg: ''
+                      - name: EntityManagementService
+                        healthy: true
+                        err: ''
+                        errMsg: ''
+                      - name: SchedulerService
+                        healthy: true
+                        err: ''
+                        errMsg: ''
+      '400':
+        description: Bad Request
+        headers: {}
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                ts:
+                  type: string
+                params:
+                  type: object
+                  properties:
+                    resmsgid:
+                      type: string
+                    msgid:
+                      type: string
+                    status:
+                      type: string
+                    err:
+                      type: string
+                    errMsg:
+                      type: string
+                status:
+                  type: number
+                result:
+                  type: object
+                  properties: {}
+            examples:
+              Bad Request:
+                value:
+                  id: userService.Health.API
+                  ts: '2025-07-18T04:43:35.352Z'
+                  params:
+                    resmsgid: c3b82b80-6391-11f0-9617-d554ca31487a
+                    msgid: c3b82b81-6391-11f0-9617-d554ca31487a
+                    status: failed
+                    err: CONFIG_VALIDATION_ERROR
+                    errMsg: "Missing 'url' for enabled service: redis"
+                  status: 400
+                  result: {}
+      '500':
+        description: Internal Server Error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                message:
+                  type: string
+                meta:
+                  type: object
+                  properties:
+                    correlation:
+                      type: string
+            examples:
+              Server Error:
+                value:
+                  responseCode: SERVER_ERROR
+                  message: Oops! Something Went Wrong.
+                  meta:
+                    correlation: d1915287-224c-4b31-b9f7-e6375bd38b4e
