@@ -116,6 +116,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 86400,
 	},
+	INTERNAL_ACCESS_TOKEN: {
+		message:
+			'Secret token for internal/service-to-service and data-pipeline API calls (e.g. user update without user auth token). Keep secure.',
+		optional: true,
+	},
 	REDIS_HOST: {
 		message: 'Redis Host Url',
 		optional: false,

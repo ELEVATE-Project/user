@@ -21,21 +21,36 @@ const tenantDomainQueries = require('@database/queries/tenantDomain')
 const organizationQueries = require('@database/queries/organization')
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
-	const parts = requestPath.match(/[^/]+/g)
-	const api_path = [`/${parts[0]}/${parts[1]}/${parts[2]}/*`]
+	const parts = requestPath.match(/[^/]+/g) || []
+	let api_path
 
-	if (parts[4]) api_path.push(`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`)
-	else
-		api_path.push(
-			`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}`,
-			`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`
-		)
+	if (parts.length >= 4) {
+		api_path = [`/${parts[0]}/${parts[1]}/${parts[2]}/*`]
+		if (parts[4]) api_path.push(`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`)
+		else
+			api_path.push(
+				`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}`,
+				`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`
+			)
+	} else if (parts.length === 3) {
+		api_path = [`/${parts[0]}/${parts[1]}/${parts[2]}`, `/${parts[0]}/${parts[1]}/${parts[2]}/*`]
+	} else if (parts.length === 2) {
+		api_path = [`/${parts[0]}/${parts[1]}`, `/${parts[0]}/${parts[1]}/*`]
+	} else if (parts.length === 1) {
+		api_path = [`/${parts[0]}`, `/${parts[0]}/*`]
+	} else {
+		return false
+	}
 
 	if (Array.isArray(roleTitle) && !roleTitle.includes(common.PUBLIC_ROLE)) {
 		roleTitle.push(common.PUBLIC_ROLE)
 	}
 
-	const filter = { role_title: roleTitle, module: parts[2], api_path: { [Op.in]: api_path } }
+	const filter = {
+		role_title: roleTitle,
+		...(parts[2] != null && { module: parts[2] }),
+		api_path: { [Op.in]: api_path },
+	}
 	const attributes = ['request_type', 'api_path', 'module']
 	const allowedPermissions = await rolePermissionMappingQueries.findAll(filter, attributes)
 
@@ -98,7 +113,53 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
-		if (internalAccess && !authHeader) return next()
+		// Internal access without user token (existing internal URLs unchanged; pipeline uses internal_access_token only)
+		if (internalAccess && !authHeader) {
+			// New path only: data-pipeline user update — resolve target user from headers, set decodedToken; no change to other internal URLs
+			const internalUserUpdatePath = '/user/v1/user/update'
+			if (req.path.includes(internalUserUpdatePath)) {
+				// Express normalizes headers to lowercase
+				const userId = (req.headers[common.INTERNAL_USER_ID_HEADER] || '').trim()
+				const tenantCode = (req.headers[common.TENANT_CODE_HEADER] || req.headers['x-tenant-code'] || '').trim()
+				if (!userId || !tenantCode) {
+					throw responses.failureResponse({
+						message: 'INTERNAL_UPDATE_REQUIRES_USER_ID_AND_TENANT',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				const user = await userQueries.findUserWithOrganization(
+					{ id: userId, tenant_code: tenantCode },
+					{},
+					false
+				)
+				if (!user) {
+					throw responses.failureResponse({
+						message: 'USER_NOT_FOUND',
+						statusCode: httpStatusCode.unauthorized,
+						responseCode: 'UNAUTHORIZED',
+					})
+				}
+				const org = user.organizations?.[0]
+				if (!org) {
+					throw responses.failureResponse({
+						message: 'USER_HAS_NO_ORGANIZATION',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				req.decodedToken = {
+					id: user.id,
+					name: user.name,
+					session_id: null,
+					tenant_code: user.tenant_code,
+					organization_id: org.id,
+					organization_code: org.code,
+					roles: org.roles || [],
+				}
+			}
+			return next()
+		}
 
 		if (!authHeader) {
 			try {

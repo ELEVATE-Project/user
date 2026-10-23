@@ -14,9 +14,12 @@ module.exports = {
 		DEFAULT_PAGE_SIZE: 100,
 	},
 	getPaginationOffset,
+	// Header used by data-pipeline / internal services to specify target user for internal user update (no user auth token)
+	INTERNAL_USER_ID_HEADER: 'x-internal-user-id',
 	internalAccessUrls: [
 		'/user/v1/profile/details',
 		'/user/v1/user/profileById',
+		'/user/v1/user/update',
 		'/user/v1/account/list',
 		'/user/v1/user/read',
 		'/user/v1/admin/create',
