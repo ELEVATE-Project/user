@@ -3,6 +3,7 @@
   vars:
     #contents: "{{ lookup('file', '/opt/rsync/text.txt') }}"
     project_path: /opt/backend/deployment
+    repo_url: https://github.com/ELEVATE-Project/user.git
   tasks:
     - name: Slurp hosts file
       slurp:
@@ -38,7 +39,7 @@
         state=directory
     - name: Clone the repository
       git:
-        repo: https://github.com/ELEVATE-Project/user.git
+        repo: "{{ repo_url }}"
         dest: "{{ release_path }}"
         clone: yes
         update: yes
