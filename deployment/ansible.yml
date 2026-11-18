@@ -29,12 +29,24 @@
       ignore_errors: yes
       args:
         chdir: "{{ project_path }}"
+    - name: Log release and current paths
+      debug:
+        msg:
+          - "release_path: {{ release_path }}"
+          - "current_path: {{ current_path }}"
+          - "current_release_path: {{ current_release_path.stdout }}"
     - name: Create new folder
       file:
         dest={{ release_path }}
         mode=0755
         recurse=yes
         state=directory
+    - name: Log clone parameters
+      debug:
+        msg:
+          - "repo_url:     {{ repo_url }}"
+          - "release_path: {{ release_path }}"
+          - "gitBranch:    {{ gitBranch }}"
     - name: Clone the repository
       git:
         repo: "{{ repo_url }}"
