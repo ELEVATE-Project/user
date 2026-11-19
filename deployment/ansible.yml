@@ -3,6 +3,7 @@
   vars:
     #contents: "{{ lookup('file', '/opt/rsync/text.txt') }}"
     project_path: /opt/backend/deployment
+    repo_url: https://github.com/ELEVATE-Project/user.git
   tasks:
     - name: Slurp hosts file
       slurp:
@@ -11,14 +12,12 @@
     #- debug: msg="{{ slurpfile['content'] | b64decode }}"
     #- debug: msg="the value of foo.txt is {{ contents }}"
     - name: Get vault credentials
-      shell: "curl --location --request GET '{{ vaultAddress }}{{ vaultName }}' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
-}}/data2.json'"
+      shell: "curl --silent --insecure --request GET '{{ vaultAddress }}{{ vaultName }}' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path }}/data2.json'"
       register: credentials
     - debug: msg="{{ credentials }}"
 
     - name: Get gcp credentials
-      shell: "curl --location --request GET '{{ vaultAddress }}gcp' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data.data' > '{{ project_path 
-}}/gcp.json'"
+      shell: "curl --silent --insecure --request GET '{{ vaultAddress }}gcp' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data.data' > '{{ project_path }}/gcp.json'"
 
     - name: Set some variable
       set_fact:
@@ -38,7 +37,7 @@
         state=directory
     - name: Clone the repository
       git:
-        repo: https://github.com/ELEVATE-Project/user.git
+        repo: "{{ repo_url }}"
         dest: "{{ release_path }}"
         clone: yes
         update: yes
